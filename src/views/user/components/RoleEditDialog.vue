@@ -79,12 +79,7 @@ const handleUpdateRole = () => {
 }
 
 const updateRole = async () => {
-  await restFull('/role', 'PUT', {
-    id: role.value.id,
-    role_name: role.value.role_name,
-    access_level: Number(role.value.access_level),
-    comment: role.value.comment
-  })
+  await restFull('/role', 'PUT', role.value)
     .then(() => {
       ElMessage.success(i18n.t('msg.appMain.updateSuccess'))
     })

@@ -5,7 +5,7 @@
         <el-input v-model="resource.resource_path" disabled></el-input>
       </el-form-item>
       <el-form-item label="鉴权" label-width="100px" prop="is_auth">
-        <el-select v-model="resource.is_auth" placeholder="是否鉴权">
+        <el-select v-model="resource.is_auth" placeholder="鉴权">
           <el-option v-for="item in authOptions" :key="item.value" :value=item.value :label=item.label />
         </el-select>
       </el-form-item>
@@ -25,6 +25,7 @@ import { restFull } from '@/api'
 import { ElMessage } from 'element-plus'
 import { defineEmits, defineProps, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+
 const i18n = useI18n()
 
 // 父组件传入的值
@@ -41,7 +42,7 @@ const props = defineProps({
 
 const authOptions = ref(
   [{
-    value: 0,
+    value: 2,
     label: '不鉴权'
   }, {
     value: 1,
@@ -90,12 +91,7 @@ const handleUpdateResource = () => {
 }
 
 const updateResource = async () => {
-  await restFull('/resource', 'PUT', {
-    id: resource.value.id,
-    resource_path: resource.value.resource_path,
-    is_auth: Number(resource.value.is_auth),
-    comment: resource.value.comment
-  })
+  await restFull('/resource', 'PUT', resource.value)
     .then(() => {
       ElMessage.success(i18n.t('msg.appMain.updateSuccess'))
     })

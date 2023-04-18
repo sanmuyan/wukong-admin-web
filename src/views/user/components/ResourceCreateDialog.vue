@@ -60,7 +60,7 @@ const emits = defineEmits(['update:modelValue', 'updateOk'])
 
 const authOptions = ref(
   [{
-    value: 0,
+    value: 2,
     label: '不鉴权'
   }, {
     value: 1,

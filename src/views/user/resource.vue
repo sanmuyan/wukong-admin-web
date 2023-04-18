@@ -18,10 +18,10 @@
         <el-table-column prop="is_access_control" label="鉴权" width="180">
           <template #default="{ row }">
             <el-tag
-              :type="row.is_auth === 0 ? 'success' : 'danger'"
+              :type="row.is_auth === 1 ? 'danger' : 'success'"
               disable-transitions
             >
-              {{ row.is_auth === 0 ? '开放' : '鉴权' }}
+              {{ row.is_auth === 1 ? '鉴权' : '开放' }}
             </el-tag>
           </template>
         </el-table-column>

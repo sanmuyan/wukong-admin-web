@@ -16,6 +16,11 @@
       <el-form-item label="手机号" label-width="100px" prop="mobile">
         <el-input v-model="user.mobile"></el-input>
       </el-form-item>
+      <el-form-item label="用户状态" label-width="100px" prop="is_auth">
+        <el-select v-model="user.is_active" placeholder="用户状态">
+          <el-option v-for="item in activeOptions" :key="item.value" :value=item.value :label=item.label />
+        </el-select>
+      </el-form-item>
     </el-form>
     <div class="dialog-button">
       <el-button type="primary" size="small" @click="closed">取消</el-button>
@@ -42,6 +47,16 @@ const props = defineProps({
     required: true
   }
 })
+
+const activeOptions = ref(
+  [{
+    value: 2,
+    label: '禁用'
+  }, {
+    value: 1,
+    label: '活跃'
+  }])
+
 const user = ref({})
 
 const emits = defineEmits(['update:modelValue', 'updateOk'])
@@ -98,14 +113,7 @@ const handleUpdateUser = () => {
 }
 
 const updateUser = async () => {
-  await restFull('/user', 'PUT', {
-    id: user.value.id,
-    username: user.value.username,
-    display_name: user.value.display_name,
-    password: user.value.password,
-    email: user.value.email,
-    mobile: user.value.mobile
-  })
+  await restFull('/user', 'PUT', user.value)
     .then(() => {
       ElMessage.success(i18n.t('msg.appMain.updateSuccess'))
     })
