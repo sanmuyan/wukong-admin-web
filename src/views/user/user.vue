@@ -55,12 +55,10 @@
       <user-edit-dialog
         v-model="dialogUserEditShow"
         :userEdit="userEdit"
-        @updateOk="getUsers"
       ></user-edit-dialog>
       <!--      创建-->
       <user-create-dialog
         v-model="dialogUserCreateShow"
-        @updateOk="getUsers"
       ></user-create-dialog>
       <!--      角色编辑-->
       <user-bind-edit-dialog
@@ -73,7 +71,7 @@
 
 <script setup>
 import { restFull } from '@/api'
-import { ref } from 'vue'
+import { provide, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import UserEditDialog from './components/UserEditDialog'
 import UserBindEditDialog from './components/UserBindEditDialog'
@@ -99,6 +97,7 @@ const getUsers = async () => {
   totalCount.value = res.total_count
   loading.value = false
 }
+provide('getUsers', getUsers)
 getUsers()
 
 const handleSizeChange = currentSize => {
@@ -118,7 +117,6 @@ const handleUserQuery = () => {
 // 编辑
 const userEdit = ref({})
 const dialogUserEditShow = ref(false)
-
 const handleUserEdit = user => {
   userEdit.value = user
   dialogUserEditShow.value = true

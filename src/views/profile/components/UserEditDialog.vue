@@ -1,6 +1,6 @@
 <template>
-  <el-dialog @close="closed" :model-value="modelValue" width="500px" draggable title="用户编辑">
-    <el-form style="width: 380px">
+  <el-dialog @close="closed" v-model="modelValue" width="500px" draggable title="用户编辑">
+    <el-form ref="formRef" style="width: 380px">
       <el-form-item label="用户名" label-width="100px">
         <el-input v-model="user.username" disabled></el-input>
       </el-form-item>
@@ -18,8 +18,8 @@
       </el-form-item>
     </el-form>
     <div class="dialog-button">
-      <el-button type="primary" size="small" @click="closed">取消</el-button>
-      <el-button type="primary" size="small" @click="updateUser">提交</el-button>
+      <el-button type="primary" size="small" @click="handleButtonClosed">取消</el-button>
+      <el-button type="primary" size="small" @click="handleButtonApply">提交</el-button>
     </div>
   </el-dialog>
 </template>
@@ -27,37 +27,35 @@
 <script setup>
 import { restFull } from '@/api'
 import { ElMessage } from 'element-plus'
-import { defineEmits, defineProps, ref, watch } from 'vue'
+import { defineModel, inject, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-const i18n = useI18n()
 
+const i18n = useI18n()
+const formRef = ref(null)
 // 父组件传入的值
-const props = defineProps({
-  modelValue: {
-    type: Boolean,
-    required: true
-  },
-  userEdit: {
-    type: Object,
-    required: true
-  }
-})
-const user = ref({})
-const emits = defineEmits(['update:modelValue', 'updateOk'])
+const modelValue = defineModel({ required: true })
+const userEdit = defineModel('userEdit', { required: true })
+const getUserProfile = inject('getUserProfile')
+
+const clone = (obj) => {
+  return JSON.parse(JSON.stringify(obj))
+}
+
+const user = ref(clone(userEdit.value))
 
 const getUser = async () => {
-  user.value = props.userEdit
+  user.value = clone(userEdit.value)
 }
 
 watch(
-  () => props.modelValue,
+  () => modelValue.value,
   val => {
     if (val) getUser()
   }
 )
 
 const updateUser = async () => {
-  await restFull('/user/profile', 'PUT', {
+  await restFull('/profile', 'PUT', {
     id: user.value.id,
     username: user.value.username,
     display_name: user.value.display_name,
@@ -67,14 +65,28 @@ const updateUser = async () => {
   })
     .then(() => {
       ElMessage.success(i18n.t('msg.appMain.updateSuccess'))
+      getUserProfile()
+      closed()
     })
+}
+
+const handleButtonApply = () => {
+  // formRef.value.validate(valid => {
+  //   if (valid) {
+  //     updateUser()
+  //   }
+  // })
+  updateUser()
+}
+
+const handleButtonClosed = () => {
   closed()
 }
 
 const closed = () => {
-  emits('update:modelValue', false)
-  emits('updateOk')
+  modelValue.value = false
   user.value = {}
+  formRef.value.clearValidate()
 }
 
 </script>

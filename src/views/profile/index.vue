@@ -17,7 +17,7 @@
           <el-input v-model="user.mobile" readonly></el-input>
         </el-form-item>
         <el-form-item label="角色" label-width="100px">
-            <el-tag style="margin-right: 5px" v-for="item in roleNameList" :key="item.id" type="success">{{ item }}</el-tag>
+            <el-tag style="margin-right: 5px" v-for="item in roles" :key="item.id" type="success">{{ item }}</el-tag>
         </el-form-item>
       </el-form>
       <el-button type="primary" size="small" @click="userEditClick">修改</el-button>
@@ -25,34 +25,30 @@
     </el-card>
     <user-edit-dialog
       v-model="dialogUserEditShow"
-      @updateOk="getUserProfile"
       :userEdit="userEdit"
     ></user-edit-dialog>
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { provide, ref } from 'vue'
 import { restFull } from '@/api'
 import UserEditDialog from './components/UserEditDialog'
 
 const user = ref({})
-const rbac = ref({})
-const roleNameList = ref([])
+const roles = ref([])
+const menus = ref([])
 
 const getUserProfile = async () => {
-  const res = await restFull('/user/profile', 'GET')
-  user.value = res.user
-  rbac.value = res.rbac
-  roleNameList.value = []
-  if (rbac.value.roles) {
-    rbac.value.roles.forEach(role => {
-      roleNameList.value.push(role.comment)
-    })
-  } else {
-    roleNameList.value.push('未绑定角色')
+  const res = await restFull('/profile', 'GET')
+  user.value = res.user || {}
+  roles.value = res.roles || []
+  menus.value = res.menus || []
+  if (roles.value.length === 0) {
+    roles.value.push('未绑定角色')
   }
 }
+provide('getUserProfile', getUserProfile)
 getUserProfile()
 
 // 编辑

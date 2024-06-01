@@ -44,12 +44,10 @@
       <role-edit-dialog
         v-model="dialogRoleEditShow"
         :roleEdit="roleEdit"
-        @updateOk="getRoles"
       ></role-edit-dialog>
       <!--      创建-->
       <role-create-dialog
         v-model="dialogRoleCreateShow"
-        @updateOk="getRoles"
       ></role-create-dialog>
       <!--      权限编辑-->
       <role-bind-edit-dialog
@@ -62,7 +60,7 @@
 
 <script setup>
 import { restFull } from '@/api'
-import { ref } from 'vue'
+import { provide, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import RoleEditDialog from './components/RoleEditDialog'
 import RoleCreateDialog from './components/RoleCreateDialog'
@@ -85,6 +83,7 @@ const getRoles = async () => {
   pageSize.value = res.page_size
   totalCount.value = res.total_count
 }
+provide('getRoles', getRoles)
 getRoles()
 
 const handleSizeChange = currentSize => {

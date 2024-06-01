@@ -1,6 +1,6 @@
 <template>
-  <el-dialog @close="closed" width="500px" draggable title="资源创建">
-    <el-form :model="resource" :rules="formRules" ref="formRef" style="width: 380px">
+  <el-dialog @close="closed" v-model="modelValue" width="500px" draggable title="资源创建">
+    <el-form :model="resource" :rules="formRules" ref="formRef" style="width: 380px" >
       <el-form-item label="路径" label-width="100px" prop="resource_path" >
         <el-input v-model="resource.resource_path"></el-input>
       </el-form-item>
@@ -14,8 +14,8 @@
       </el-form-item>
     </el-form>
     <div class="dialog-button">
-      <el-button type="primary" size="small" @click="closed">取消</el-button>
-      <el-button type="primary" size="small" @click="handleCreateResource">提交</el-button>
+      <el-button type="primary" size="small" @click="handleButtonClosed">取消</el-button>
+      <el-button type="primary" size="small" @click="handleButtonApply">提交</el-button>
     </div>
   </el-dialog>
 </template>
@@ -23,15 +23,18 @@
 <script setup>
 import { restFull } from '@/api'
 import { ElMessage } from 'element-plus'
-import { defineEmits, ref } from 'vue'
+import { defineModel, inject, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 const i18n = useI18n()
+const formRef = ref(null)
+// 父组件传入的值
+const modelValue = defineModel({ required: true })
+const getResources = inject('getResources')
 
 const resource = ref({
   is_auth: 1
 })
 
-const formRef = ref(null)
 const formRules = ref({
   resource_path: [
     {
@@ -56,8 +59,6 @@ const formRules = ref({
   ]
 })
 
-const emits = defineEmits(['update:modelValue', 'updateOk'])
-
 const authOptions = ref(
   [{
     value: 2,
@@ -67,14 +68,6 @@ const authOptions = ref(
     label: '鉴权'
   }])
 
-const handleCreateResource = () => {
-  formRef.value.validate(valid => {
-    if (valid) {
-      createResource()
-    }
-  })
-}
-
 const createResource = async () => {
   await restFull('/resource', 'POST', {
     resource_path: resource.value.resource_path,
@@ -83,13 +76,25 @@ const createResource = async () => {
   })
     .then(() => {
       ElMessage.success(i18n.t('msg.appMain.createSuccess'))
+      closed()
+      getResources()
     })
+}
+
+const handleButtonApply = () => {
+  formRef.value.validate(valid => {
+    if (valid) {
+      createResource()
+    }
+  })
+}
+
+const handleButtonClosed = () => {
   closed()
 }
 
 const closed = () => {
-  emits('update:modelValue', false)
-  emits('updateOk')
+  modelValue.value = false
   resource.value = { is_auth: 1 }
   formRef.value.clearValidate()
 }

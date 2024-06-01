@@ -52,20 +52,18 @@
     <!--      创建-->
     <resource-create-dialog
       v-model="dialogResourceCreateShow"
-      @updateOk="getResources"
     ></resource-create-dialog>
     <!--      编辑-->
     <resource-edit-dialog
       v-model="dialogResourceEditShow"
       :resourceEdit="resourceEdit"
-      @updateOk="getResources"
     ></resource-edit-dialog>
   </div>
 </template>
 
 <script setup>
 import { restFull } from '@/api'
-import { ref } from 'vue'
+import { provide, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import ResourceCreateDialog from './components/ResourceCreateDialog'
 import ResourceEditDialog from './components/ResourceEditDialog'
@@ -87,6 +85,7 @@ const getResources = async () => {
   pageSize.value = res.page_size
   totalCount.value = res.total_count
 }
+provide('getResources', getResources)
 getResources()
 
 const handleSizeChange = currentSize => {

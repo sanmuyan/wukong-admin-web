@@ -1,6 +1,6 @@
 <template>
   <!--      编辑-->
-  <el-dialog @close="closed" :model-value="modelValue" width="800px" draggable title="权限编辑">
+  <el-dialog @close="closed" v-model="modelValue" width="800px" draggable title="权限编辑">
     <el-transfer
       v-model="roleResourceIdList"
       :titles="['资源列表', '已授权']"
@@ -19,25 +19,16 @@
 </template>
 
 <script setup>
-import { defineEmits, defineProps, ref, watch } from 'vue'
+import { defineModel, ref, watch } from 'vue'
 import { restFull } from '@/api'
 import { ElMessage } from 'element-plus'
 import { useI18n } from 'vue-i18n'
+
 const i18n = useI18n()
 
 // 父组件传入的值
-const props = defineProps({
-  modelValue: {
-    type: Boolean,
-    required: true
-  },
-  roleId: {
-    type: Number,
-    required: true
-  }
-})
-
-const emits = defineEmits(['update:modelValue'])
+const modelValue = defineModel({ required: true })
+const roleId = defineModel('roleId', { required: true })
 
 const resourceList = ref([])
 const roleResourceOptionList = ref([])
@@ -52,7 +43,7 @@ const getResources = async () => {
 const getRoleBinds = async () => {
   await getResources()
   const res = await restFull('/roleBind', 'GET', {
-    role_id: props.roleId
+    role_id: roleId.value
   })
   roleBindList.value = res.role_binds
   // 生成默认数据
@@ -73,7 +64,7 @@ const getRoleBinds = async () => {
 }
 
 watch(
-  () => props.modelValue,
+  () => modelValue.value,
   val => {
     if (val) getRoleBinds()
   }
@@ -81,17 +72,20 @@ watch(
 
 const updateRoleBind = () => {
   // 删除
+  const deleteRoleBindList = []
   roleBindList.value.forEach(roleBind => {
     const x = roleResourceIdList.value.indexOf(roleBind.resource_id)
     if (x === -1) {
-      restFull('/roleBind', 'DELETE', {
-        id: roleBind.id
-      }).then(() => {
-        ElMessage.success(i18n.t('msg.appMain.updateSuccess'))
-      })
+      deleteRoleBindList.push({ id: roleBind.id })
     }
   })
-  // 更新
+  if (deleteRoleBindList.length > 0) {
+    restFull('/roleBind', 'DELETE', deleteRoleBindList).then(() => {
+      ElMessage.success(i18n.t('msg.appMain.updateSuccess'))
+    })
+  }
+  // 创建
+  const createRoleBindList = []
   roleResourceIdList.value.forEach(resourceId => {
     const roleBind = roleBindList.value.find(roleBind => {
       return roleBind.resource_id === resourceId
@@ -99,18 +93,21 @@ const updateRoleBind = () => {
     if (roleBind) {
       return
     }
-    restFull('/roleBind', 'POST', {
+    createRoleBindList.push({
       resource_id: resourceId,
-      role_id: props.roleId
-    }).then(() => {
-      ElMessage.success('更新成功')
+      role_id: roleId.value
     })
   })
+  if (createRoleBindList.length > 0) {
+    restFull('/roleBind', 'POST', createRoleBindList).then(() => {
+      ElMessage.success(i18n.t('msg.appMain.updateSuccess'))
+    })
+  }
   closed()
 }
 
 const closed = () => {
-  emits('update:modelValue', false)
+  modelValue.value = false
   roleResourceIdList.value = []
   roleResourceOptionList.value = []
 }

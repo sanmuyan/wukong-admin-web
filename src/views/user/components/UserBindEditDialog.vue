@@ -1,9 +1,16 @@
 <template>
   <!--      编辑-->
-  <el-dialog @close="closed" :model-value="modelValue" width="800px" draggable title="角色编辑">
-    <el-checkbox-group v-model="userRoleNameList">
-      <el-checkbox v-for="item in roleList" :key="item.id" :label="item.role_name"></el-checkbox>
-    </el-checkbox-group>
+  <el-dialog @close="closed" v-model="modelValue" width="800px" draggable title="角色编辑">
+    <el-transfer
+      v-model="userRoleIdList"
+      :titles="['角色列表', '已授权']"
+      :button-texts="['移除', '添加']"
+      :props="{
+      key: 'value',
+      label: 'label',
+    }"
+      :data="userRoleOptionList"
+    />
     <div class="dialog-button">
       <el-button type="primary" size="small" @click="closed">取消</el-button>
       <el-button type="primary" size="small" @click="updateUserBind">提交</el-button>
@@ -12,28 +19,19 @@
 </template>
 
 <script setup>
-import { defineEmits, defineProps, ref, watch } from 'vue'
+import { defineModel, ref, watch } from 'vue'
 import { restFull } from '@/api'
 import { ElMessage } from 'element-plus'
 import { useI18n } from 'vue-i18n'
+
 const i18n = useI18n()
 
 // 父组件传入的值
-const props = defineProps({
-  modelValue: {
-    type: Boolean,
-    required: true
-  },
-  userId: {
-    type: Number,
-    required: true
-  }
-})
-
-const emits = defineEmits(['update:modelValue'])
+const modelValue = defineModel({ required: true })
+const userId = defineModel('userId', { required: true })
 
 const roleList = ref([])
-const userRoleNameList = ref([])
+const userRoleOptionList = ref([])
 const userRoleIdList = ref([])
 const userBindList = ref([])
 
@@ -45,52 +43,47 @@ const getRoles = async () => {
 const getUserBinds = async () => {
   await getRoles()
   const res = await restFull('/userBind', 'GET', {
-    user_id: props.userId
+    user_id: userId.value
   })
   userBindList.value = res.user_binds
   // 生成默认数据
-  userRoleNameList.value = []
-  userBindList.value.forEach(userBind => {
-    const role = roleList.value.find(role => {
+  roleList.value.forEach(role => {
+    userRoleOptionList.value.push({
+      value: role.id,
+      label: role.role_name
+    })
+    const userBind = userBindList.value.find(userBind => {
       return userBind.role_id === role.id
     })
-    if (role) {
-      userRoleNameList.value.push(role.role_name)
+    if (userBind) {
+      userRoleIdList.value.push(role.id)
     }
   })
 }
 
 watch(
-  () => props.modelValue,
+  () => modelValue.value,
   val => {
     if (val) getUserBinds()
   }
 )
 
 const updateUserBind = () => {
-  // 生成ID列表
-  userRoleIdList.value = []
-  userRoleNameList.value.forEach(roleName => {
-    const role = roleList.value.find(role => {
-      return role.role_name === roleName
-    })
-    if (role) {
-      userRoleIdList.value.push(role.id)
-    }
-  })
   // 删除
+  const deleteUserBindList = []
   userBindList.value.forEach(userBind => {
     const x = userRoleIdList.value.indexOf(userBind.role_id)
     if (x === -1) {
-      restFull('/userBind', 'DELETE', {
-        user_id: props.userId,
-        role_id: userBind.role_id
-      }).then(() => {
-        ElMessage.success(i18n.t('msg.appMain.updateSuccess'))
-      })
+      deleteUserBindList.push({ id: userBind.id })
     }
   })
-  // 更新
+  if (deleteUserBindList.length > 0) {
+    restFull('/userBind', 'DELETE', deleteUserBindList).then(() => {
+      ElMessage.success(i18n.t('msg.appMain.updateSuccess'))
+    })
+  }
+  // 创建
+  const createUserBindList = []
   userRoleIdList.value.forEach(roleId => {
     const userBind = userBindList.value.find(userBind => {
       return userBind.role_id === roleId
@@ -98,19 +91,23 @@ const updateUserBind = () => {
     if (userBind) {
       return
     }
-    restFull('/userBind', 'POST', {
-      user_id: props.userId,
+    createUserBindList.push({
+      user_id: userId.value,
       role_id: roleId
-    }).then(() => {
-      ElMessage.success('更新成功')
     })
   })
+  if (createUserBindList.length > 0) {
+    restFull('/userBind', 'POST', createUserBindList).then(() => {
+      ElMessage.success('更新成功')
+    })
+  }
   closed()
 }
 
 const closed = () => {
-  emits('update:modelValue', false)
-  userRoleNameList.value = []
+  modelValue.value = false
+  userRoleIdList.value = []
+  userRoleOptionList.value = []
 }
 
 </script>

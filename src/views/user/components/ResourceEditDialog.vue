@@ -1,5 +1,5 @@
 <template>
-  <el-dialog @close="closed" :model-value="modelValue" width="500px" draggable title="资源编辑">
+  <el-dialog @close="closed" v-model="modelValue" width="500px" draggable title="资源编辑">
     <el-form :model="resource" :rules="formRules" ref="formRef" style="width: 380px">
       <el-form-item label="路径" label-width="100px" prop="resource_path">
         <el-input v-model="resource.resource_path" disabled></el-input>
@@ -14,8 +14,8 @@
       </el-form-item>
     </el-form>
     <div class="dialog-button">
-      <el-button type="primary" size="small" @click="closed">取消</el-button>
-      <el-button type="primary" size="small" @click="handleUpdateResource">提交</el-button>
+      <el-button type="primary" size="small" @click="handleButtonClosed">取消</el-button>
+      <el-button type="primary" size="small" @click="handleButtonApply">提交</el-button>
     </div>
   </el-dialog>
 </template>
@@ -23,35 +23,30 @@
 <script setup>
 import { restFull } from '@/api'
 import { ElMessage } from 'element-plus'
-import { defineEmits, defineProps, ref, watch } from 'vue'
+import { defineModel, inject, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 const i18n = useI18n()
-
+const formRef = ref(null)
 // 父组件传入的值
-const props = defineProps({
-  modelValue: {
-    type: Boolean,
-    required: true
-  },
-  resourceEdit: {
-    type: Object,
-    required: true
-  }
-})
+const modelValue = defineModel({ required: true })
+const resourceEdit = defineModel('resourceEdit', { required: true })
+const getResources = inject('getResources')
 
 const authOptions = ref(
   [{
-    value: 2,
+    value: -1,
     label: '不鉴权'
   }, {
     value: 1,
     label: '鉴权'
   }])
 
-const resource = ref({})
+const clone = (obj) => {
+  return JSON.parse(JSON.stringify(obj))
+}
+const resource = ref(clone(resourceEdit.value))
 
-const formRef = ref(null)
 const formRules = ref({
   resource_path: [
     {
@@ -76,38 +71,36 @@ const formRules = ref({
   ]
 })
 
-const emits = defineEmits(['update:modelValue', 'updateOk'])
-
 const getResource = () => {
-  resource.value = props.resourceEdit
-}
-
-const handleUpdateResource = () => {
-  formRef.value.validate(valid => {
-    if (valid) {
-      updateResource()
-    }
-  })
-}
-
-const updateResource = async () => {
-  await restFull('/resource', 'PUT', resource.value)
-    .then(() => {
-      ElMessage.success(i18n.t('msg.appMain.updateSuccess'))
-    })
-  closed()
+  resource.value = clone(resourceEdit.value)
 }
 
 watch(
-  () => props.modelValue,
+  () => modelValue.value,
   val => {
     if (val) getResource()
   }
 )
 
+const updateResource = async () => {
+  await restFull('/resource', 'PUT', resource.value)
+    .then(() => {
+      ElMessage.success(i18n.t('msg.appMain.updateSuccess'))
+      closed()
+      getResources()
+    })
+}
+
+const handleButtonApply = () => {
+  updateResource()
+}
+
+const handleButtonClosed = () => {
+  closed()
+}
+
 const closed = () => {
-  emits('update:modelValue', false)
-  emits('updateOk')
+  modelValue.value = false
   resource.value = {}
   formRef.value.clearValidate()
 }

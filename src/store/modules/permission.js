@@ -1,20 +1,20 @@
 // 专门处理权限路由的模块
-import { privateRoutes, publicRoutes } from '@/router'
+import { privateRoutes } from '@/router'
 import store from '@/store'
 
 export default {
   namespaced: true,
   state: {
-    // 路由表：初始拥有静态路由权限
-    routes: []
+    // 保存用户路由表
+    userRoutes: []
   },
   mutations: {
     /**
      * 增加路由
      */
     setRoutes (state, newRoutes) {
-      // 永远在静态路由的基础上增加新路由
-      state.routes = [...publicRoutes, ...newRoutes]
+      // 增加新路由
+      state.userRoutes = newRoutes
     }
   },
   actions: {
@@ -23,22 +23,19 @@ export default {
      */
     filterRoutes (context) {
       const routes = []
-      const menus = []
-      const roles = store.getters.userProfile.rbac.roles
-      if (roles) {
-        roles.forEach(role => {
-          if (role.access_level >= 100) {
-            privateRoutes.forEach(route => {
-              menus.push(route.name)
-            })
-          }
+      const menus = store.getters.userProfile.menus || []
+      const accessLevel = store.getters.userProfile.access_level || 0
+      if (accessLevel >= 100) {
+        // 管理员
+        privateRoutes.forEach(route => {
+          routes.push(route)
+        })
+      } else {
+        menus.forEach(menuName => {
+          // 菜单名与路由的名称匹配
+          routes.push(...privateRoutes.filter(route => route.name === menuName))
         })
       }
-      // 路由权限匹配
-      menus.forEach(key => {
-        // 权限名 与 路由的 name 匹配
-        routes.push(...privateRoutes.filter(item => item.name === key))
-      })
       // 最后添加 不匹配路由进入 404
       routes.push({
         path: '/:catchAll(.*)',

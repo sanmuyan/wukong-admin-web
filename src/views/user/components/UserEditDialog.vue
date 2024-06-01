@@ -1,5 +1,5 @@
 <template>
-  <el-dialog @close="closed" :model-value="modelValue" width="500px" draggable title="用户编辑">
+  <el-dialog @close="closed" v-model="modelValue" width="500px" draggable title="用户编辑">
     <el-form :model="user" :rules="formRules" ref="formRef" style="width: 380px">
       <el-form-item label="用户名" label-width="100px" prop="username">
         <el-input v-model="user.username" disabled></el-input>
@@ -23,8 +23,8 @@
       </el-form-item>
     </el-form>
     <div class="dialog-button">
-      <el-button type="primary" size="small" @click="closed">取消</el-button>
-      <el-button type="primary" size="small" @click="handleUpdateUser">提交</el-button>
+      <el-button type="primary" size="small" @click="handleButtonClosed">取消</el-button>
+      <el-button type="primary" size="small" @click="handleButtonApply">提交</el-button>
     </div>
   </el-dialog>
 </template>
@@ -32,36 +32,31 @@
 <script setup>
 import { restFull } from '@/api'
 import { ElMessage } from 'element-plus'
-import { defineEmits, defineProps, ref, watch } from 'vue'
+import { defineModel, inject, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-const i18n = useI18n()
 
+const i18n = useI18n()
+const formRef = ref(null)
 // 父组件传入的值
-const props = defineProps({
-  modelValue: {
-    type: Boolean,
-    required: true
-  },
-  userEdit: {
-    type: Object,
-    required: true
-  }
-})
+const modelValue = defineModel({ required: true })
+const userEdit = defineModel('userEdit', { required: true })
+const getUsers = inject('getUsers')
 
 const activeOptions = ref(
   [{
-    value: 2,
+    value: -1,
     label: '禁用'
   }, {
     value: 1,
     label: '活跃'
   }])
 
-const user = ref({})
+const clone = (obj) => {
+  return JSON.parse(JSON.stringify(obj))
+}
 
-const emits = defineEmits(['update:modelValue', 'updateOk'])
+const user = ref(clone(userEdit.value))
 
-const formRef = ref(null)
 const formRules = ref({
   username: [
     {
@@ -101,10 +96,26 @@ const formRules = ref({
 })
 
 const getUser = () => {
-  user.value = props.userEdit
+  user.value = clone(userEdit.value)
 }
 
-const handleUpdateUser = () => {
+watch(
+  () => modelValue.value,
+  val => {
+    if (val) getUser()
+  }
+)
+
+const updateUser = async () => {
+  await restFull('/user', 'PUT', user.value)
+    .then(() => {
+      ElMessage.success(i18n.t('msg.appMain.updateSuccess'))
+      closed()
+      getUsers()
+    })
+}
+
+const handleButtonApply = () => {
   formRef.value.validate(valid => {
     if (valid) {
       updateUser()
@@ -112,27 +123,15 @@ const handleUpdateUser = () => {
   })
 }
 
-const updateUser = async () => {
-  await restFull('/user', 'PUT', user.value)
-    .then(() => {
-      ElMessage.success(i18n.t('msg.appMain.updateSuccess'))
-    })
+const handleButtonClosed = () => {
   closed()
 }
 
 const closed = () => {
-  emits('update:modelValue', false)
-  emits('updateOk')
+  modelValue.value = false
   user.value = {}
   formRef.value.clearValidate()
 }
-
-watch(
-  () => props.modelValue,
-  val => {
-    if (val) getUser()
-  }
-)
 
 </script>
 

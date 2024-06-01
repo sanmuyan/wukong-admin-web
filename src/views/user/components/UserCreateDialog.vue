@@ -1,5 +1,5 @@
 <template>
-  <el-dialog @close="closed" width="500px" draggable title="用户创建">
+  <el-dialog @close="closed" v-model="modelValue" width="500px" draggable title="用户创建">
     <el-form :model="user" :rules="formRules" ref="formRef" style="width: 380px">
       <el-form-item label="用户名" label-width="100px" prop="username" >
         <el-input v-model="user.username"></el-input>
@@ -18,22 +18,24 @@
       </el-form-item>
     </el-form>
     <div class="dialog-button">
-      <el-button type="primary" size="small" @click="closed">取消</el-button>
-      <el-button type="primary" size="small" @click="handleCreateUser">提交</el-button>
+      <el-button type="primary" size="small" @click="handleButtonClosed">取消</el-button>
+      <el-button type="primary" size="small" @click="handleButtonApply">提交</el-button>
     </div>
   </el-dialog>
 </template>
 
 <script setup>
 import { restFull } from '@/api'
-import { defineEmits, ref } from 'vue'
+import { defineModel, inject, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 const i18n = useI18n()
-
+const formRef = ref(null)
+// 父组件传入的值
+const modelValue = defineModel({ required: true })
+const getUsers = inject('getUsers')
 const user = ref({})
 
-const formRef = ref(null)
 const formRules = ref({
   username: [
     {
@@ -72,16 +74,6 @@ const formRules = ref({
   ]
 })
 
-const emits = defineEmits(['update:modelValue', 'updateOk'])
-
-const handleCreateUser = () => {
-  formRef.value.validate(valid => {
-    if (valid) {
-      createUser()
-    }
-  })
-}
-
 const createUser = async () => {
   await restFull('/user', 'POST', {
     username: user.value.username,
@@ -91,13 +83,25 @@ const createUser = async () => {
     mobile: user.value.mobile
   }).then(() => {
     ElMessage.success(i18n.t('msg.appMain.createSuccess'))
+    closed()
+    getUsers()
   })
+}
+
+const handleButtonApply = () => {
+  formRef.value.validate(valid => {
+    if (valid) {
+      createUser()
+    }
+  })
+}
+
+const handleButtonClosed = () => {
   closed()
 }
 
 const closed = () => {
-  emits('update:modelValue', false)
-  emits('updateOk')
+  modelValue.value = false
   user.value = {}
   formRef.value.clearValidate()
 }

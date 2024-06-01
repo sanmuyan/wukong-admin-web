@@ -2,12 +2,13 @@ import { restFull } from '@/api'
 import { getItem, removeItemAllItem, setItem } from '@/utils/storage'
 import { TOKEN_KEY } from '@/constant'
 import router from '@/router'
+import store from '@/store'
 
 export default {
   namespaced: true,
   state: () => ({
     token: getItem(TOKEN_KEY) || '',
-    userProfile: getItem('userProfile') || {}
+    userProfile: {}
   }),
   mutations: {
     setToken (state, token) {
@@ -20,17 +21,20 @@ export default {
   },
   actions: {
     login (context, token) {
-      this.commit('user/setToken', token)
+      context.commit('setToken', token)
       router.push('/').then()
     },
     async userProfile (context) {
-      const res = await restFull('/user/profile', 'GET')
-      this.commit('user/setUserProfile', res)
+      const res = await restFull('/profile', 'GET')
+      context.commit('setUserProfile', res)
     },
-    logout () {
-      this.commit('user/setToken', '')
-      this.commit('user/setUserProfile', {})
+    logout (context) {
+      context.commit('setToken', '')
+      context.commit('setUserProfile', {})
       removeItemAllItem()
+      store.getters.userRoutes.forEach(route => {
+        router.removeRoute(route.name)
+      })
       router.push('/login').then()
     }
   }

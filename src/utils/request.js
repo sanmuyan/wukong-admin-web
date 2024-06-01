@@ -11,7 +11,7 @@ const service = axios.create({
 service.interceptors.request.use(
   config => {
     if (store.getters.token) {
-      config.headers.token = `${store.getters.token}`
+      config.headers.Authorization = `Bearer ${store.getters.token}`
     }
     return config
   },
