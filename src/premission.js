@@ -3,7 +3,7 @@ import store from '@/store'
 import { ElMessage } from 'element-plus'
 
 // 白名单
-const whiteList = ['/login']
+const whiteList = ['/login', '/oauth/callback']
 
 // 路由前置守卫
 router.beforeEach(async (to, from, next) => {
@@ -28,13 +28,20 @@ router.beforeEach(async (to, from, next) => {
     }
   } else {
     // 2. 用户未登录，只能进入白名单允许的页面
+    // 处理第三方系统不能回调带#号的URL
+    // const location = window.location
+    // if (location.hash) {
+    //   if (location.pathname === '/oauth/callback') {
+    //     location.replace(location.origin + '/#/oauth/callback' + location.search)
+    //     return
+    //   }
+    // }
     if (whiteList.indexOf(to.path) > -1) {
       next()
     } else {
       if (whiteList.indexOf(from.path) === -1) {
         ElMessage.error('未登录')
       }
-      console.log(from.path)
       next('/login')
     }
   }

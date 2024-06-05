@@ -40,6 +40,17 @@
         {{ $t('msg.login.loginBtn') }}
       </el-button>
       <div class="tips" v-html="$t('msg.login.desc')"></div>
+      <div class="other-login-container">
+        <span class="other-login-container-text">{{ $t('msg.login.otherLogin') }}</span>
+        <el-button
+          type="info"
+          size="small"
+          round
+          @click="handleOAuthLogin('gitlab')"
+        >
+          GitLab
+        </el-button>
+      </div>
     </el-form>
   </div>
 </template>
@@ -47,12 +58,13 @@
 <script setup>
 import { ref } from 'vue'
 import LangSelect from '@/components/LangSelect/index.vue'
-import { validatePassword } from '@/views/login/rules'
+import { validatePassword } from '@/utils/rules'
 import { useStore } from 'vuex'
 import { Unlock, UserFilled } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { restFull } from '@/api'
 import { useI18n } from 'vue-i18n'
+
 const i18n = useI18n()
 const loginForm = ref({
   username: 'admin',
@@ -93,6 +105,14 @@ const handleLogin = async () => {
       })
   })
 }
+
+const handleOAuthLogin = async (provider) => {
+  restFull('/oauth/login', 'GET', { provider: provider })
+    .then(data => {
+      window.location.replace(data.auth_url)
+    })
+}
+
 </script>
 <style lang="scss" scoped>
 
@@ -152,6 +172,14 @@ const handleLogin = async () => {
         &:first-of-type {
           margin-right: 16px;
         }
+      }
+    }
+
+    .other-login-container {
+      .other-login-container-text {
+        font-size: 12px;
+        color: rgb(155, 158, 160);
+        margin-right: 20px;
       }
     }
   }

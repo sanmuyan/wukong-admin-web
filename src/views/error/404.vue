@@ -25,20 +25,20 @@
       </div>
       <div class="bullshit">
         <div class="bullshit__oops">OOPS!</div>
-        <div class="bullshit__info">
-          All rights reserved
-          <a
-            style="color: #20a0ff"
-            href="https://wallstreetcn.com"
-            target="_blank"
-            >wallstreetcn</a
-          >
-        </div>
+<!--        <div class="bullshit__info">-->
+<!--          All rights reserved-->
+<!--          <a-->
+<!--            style="color: #20a0ff"-->
+<!--            href="https://wallstreetcn.com"-->
+<!--            target="_blank"-->
+<!--            >wallstreetcn</a-->
+<!--          >-->
+<!--        </div>-->
         <div class="bullshit__headline">{{ message }}</div>
         <div class="bullshit__info">
           请检查您输入的URL是否正确， 或单击按钮 下面返回主页。
         </div>
-        <a href="" class="bullshit__return-home">回到主页</a>
+        <a href="/" class="bullshit__return-home">回到主页</a>
       </div>
     </div>
   </div>

@@ -1,4 +1,4 @@
-import { createRouter, createWebHashHistory } from 'vue-router'
+import { createRouter, createWebHistory } from 'vue-router'
 import layout from '@/layout'
 import user from './modules/user'
 
@@ -6,6 +6,10 @@ export const publicRoutes = [
   {
     path: '/login',
     component: () => import('@/views/login')
+  },
+  {
+    path: '/oauth/callback',
+    component: () => import('@/views/login/components/OAuthCallback')
   },
   {
     path: '/',
@@ -35,7 +39,7 @@ export const privateRoutes = [
 ]
 
 const router = createRouter({
-  history: createWebHashHistory(),
+  history: createWebHistory(),
   routes: publicRoutes
 })
 

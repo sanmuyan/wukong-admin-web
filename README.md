@@ -4,11 +4,11 @@
 
 基于 Vue3 和Element Plus 开发，目前已经实现了基本的后台管理系统界面
 
-![img.png](img.png)
+![img.png](public/img.png)
 
-![img_1.png](img_1.png)
+![img_1.png](public/img_1.png)
 
-![img_2.png](img_2.png)
+![img_2.png](public/img_2.png)
 
 ## 配套后端
 

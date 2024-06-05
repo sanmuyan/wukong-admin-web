@@ -5,6 +5,7 @@ export default {
     usernameRule: '用户名为必填项',
     passwordRule: '密码不能少于8位',
     loginSuccess: '登录成功',
+    otherLogin: '其他方式',
     desc: `
     `
   },
