@@ -69,11 +69,8 @@ const authOptions = ref(
   }])
 
 const createResource = async () => {
-  await restFull('/resource', 'POST', {
-    resource_path: resource.value.resource_path,
-    is_auth: Number(resource.value.is_auth),
-    comment: resource.value.comment
-  })
+  resource.value.is_auth = Number(resource.value.is_auth)
+  await restFull('/resource', 'POST', resource.value)
     .then(() => {
       ElMessage.success(i18n.t('msg.appMain.createSuccess'))
       closed()

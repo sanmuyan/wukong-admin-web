@@ -5,7 +5,7 @@
         <el-input v-model="role.role_name" disabled></el-input>
       </el-form-item>
       <el-form-item label="等级" label-width="100px" prop="access_level">
-        <el-input v-model="role.access_level"></el-input>
+        <el-input v-model="role.access_level" type="number" min="1" max="100"></el-input>
       </el-form-item>
       <el-form-item label="用户菜单" label-width="100px" prop="user_menus">
         <el-input v-model="role.user_menus"></el-input>

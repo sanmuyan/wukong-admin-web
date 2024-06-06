@@ -13,7 +13,7 @@
     </div>
     <!--    获取列表-->
     <el-card>
-      <el-table :data="resourceList" border style="width: 80%">
+      <el-table :data="resourceList" style="width: 80%">
         <el-table-column prop="resource_path" label="路径" width="180"/>
         <el-table-column prop="is_access_control" label="鉴权" width="180">
           <template #default="{ row }">

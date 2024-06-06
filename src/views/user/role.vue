@@ -13,7 +13,7 @@
     </div>
     <!--    获取列表-->
     <el-card>
-      <el-table :data="roleList" border style="width: 80%">
+      <el-table :data="roleList" style="width: 80%">
         <el-table-column prop="role_name" label="角色名" width="180"/>
         <el-table-column prop="access_level" label="角色等级" width="180"/>
         <el-table-column prop="comment" label="描述" width="180"/>

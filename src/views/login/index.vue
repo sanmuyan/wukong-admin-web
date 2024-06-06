@@ -46,7 +46,7 @@
           type="info"
           size="small"
           round
-          @click="handleOAuthLogin('gitlab')"
+          @click="handleOauthLogin('gitlab')"
         >
           GitLab
         </el-button>
@@ -106,7 +106,7 @@ const handleLogin = async () => {
   })
 }
 
-const handleOAuthLogin = async (provider) => {
+const handleOauthLogin = async (provider) => {
   restFull('/oauth/login', 'GET', { provider: provider })
     .then(data => {
       window.location.replace(data.auth_url)

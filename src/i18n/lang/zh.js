@@ -5,7 +5,9 @@ export default {
     usernameRule: '用户名为必填项',
     passwordRule: '密码不能少于8位',
     loginSuccess: '登录成功',
+    loginFail: '登录失败',
     otherLogin: '其他方式',
+    isApproveLogin: '是否允许登录',
     desc: `
     `
   },
@@ -14,7 +16,9 @@ export default {
     user: '用户管理',
     userManage: '用户管理',
     roleManage: '用户角色',
-    resourceManage: '权限资源'
+    resourceManage: '权限资源',
+    app: '应用管理',
+    oauthManage: 'OAuth 应用'
   },
   tagsView: {
     refresh: '刷新',
@@ -33,5 +37,11 @@ export default {
     updateSuccess: '更新成功',
     createSuccess: '创建成功',
     isRequired: '必填项'
+  },
+  button: {
+    cancel: '取消',
+    confirm: '确定',
+    approve: '批准',
+    deny: '拒绝'
   }
 }

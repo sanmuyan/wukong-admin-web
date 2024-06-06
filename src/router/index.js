@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import layout from '@/layout'
 import user from './modules/user'
+import app from './modules/app'
 
 export const publicRoutes = [
   {
@@ -9,7 +10,7 @@ export const publicRoutes = [
   },
   {
     path: '/oauth/callback',
-    component: () => import('@/views/login/components/OAuthCallback')
+    component: () => import('@/views/login/components/OauthCallback')
   },
   {
     path: '/',
@@ -29,13 +30,18 @@ export const publicRoutes = [
         path: '/404',
         name: '404',
         component: () => import('@/views/error/404')
+      },
+      {
+        path: '/oauth/authorize',
+        name: 'oauthAuthorize',
+        component: () => import('@/views/login/components/OauthAuthorize')
       }
     ]
   }
 ]
 
 export const privateRoutes = [
-  user
+  user, app
 ]
 
 const router = createRouter({

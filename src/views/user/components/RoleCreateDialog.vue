@@ -5,7 +5,7 @@
         <el-input v-model="role.role_name"></el-input>
       </el-form-item>
       <el-form-item label="等级" label-width="100px" prop="access_level">
-        <el-input v-model="role.access_level"></el-input>
+        <el-input v-model="role.access_level" type="number" min="1" max="100"></el-input>
       </el-form-item>
       <el-form-item label="用户菜单" label-width="100px" prop="user_menus">
         <el-input v-model="role.user_menus"></el-input>
@@ -67,12 +67,8 @@ const formRules = ref({
 })
 
 const createRole = async () => {
-  await restFull('/role', 'POST', {
-    role_name: role.value.role_name,
-    access_level: Number(role.value.access_level),
-    user_menus: role.value.user_menus,
-    comment: role.value.comment
-  })
+  role.value.access_level = Number(role.value.access_level)
+  await restFull('/role', 'POST', role.value)
     .then(() => {
       ElMessage.success(i18n.t('msg.appMain.createSuccess'))
       closed()

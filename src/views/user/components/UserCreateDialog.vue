@@ -1,7 +1,7 @@
 <template>
   <el-dialog @close="closed" v-model="modelValue" width="500px" draggable title="用户创建">
     <el-form :model="user" :rules="formRules" ref="formRef" style="width: 380px">
-      <el-form-item label="用户名" label-width="100px" prop="username" >
+      <el-form-item label="用户名" label-width="100px" prop="username">
         <el-input v-model="user.username"></el-input>
       </el-form-item>
       <el-form-item label="显示名" label-width="100px" prop="display_name">
@@ -29,6 +29,7 @@ import { restFull } from '@/api'
 import { defineModel, inject, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useI18n } from 'vue-i18n'
+
 const i18n = useI18n()
 const formRef = ref(null)
 // 父组件传入的值
@@ -75,17 +76,12 @@ const formRules = ref({
 })
 
 const createUser = async () => {
-  await restFull('/user', 'POST', {
-    username: user.value.username,
-    display_name: user.value.display_name,
-    password: user.value.password,
-    email: user.value.email,
-    mobile: user.value.mobile
-  }).then(() => {
-    ElMessage.success(i18n.t('msg.appMain.createSuccess'))
-    closed()
-    getUsers()
-  })
+  await restFull('/user', 'POST', user.value)
+    .then(() => {
+      ElMessage.success(i18n.t('msg.appMain.createSuccess'))
+      closed()
+      getUsers()
+    })
 }
 
 const handleButtonApply = () => {
