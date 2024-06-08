@@ -96,26 +96,9 @@ const handleLogin = async () => {
     if (!valid) return
     loading.value = true
     restFull('/login', 'POST', loginForm.value)
-      .then(data => {
-        store.dispatch('user/login', data.token)
+      .then(async data => {
+        await store.dispatch('user/login', data.token)
         ElMessage.success(i18n.t('msg.login.loginSuccess'))
-        const location = window.location
-        if (location.search) {
-          const searchObj = urlToParamsObj(location.href)
-          if (searchObj.callback) {
-            let newHref = ''
-            for (const k in searchObj) {
-              if (k === 'callback') {
-                newHref = searchObj[k]
-              } else {
-                if (newHref) {
-                  newHref += `&${k}=${searchObj[k]}`
-                }
-              }
-            }
-            window.location.replace(newHref)
-          }
-        }
       })
       .catch(() => {
         loading.value = false
@@ -130,6 +113,30 @@ const handleOauthLogin = async (provider) => {
     })
 }
 
+const handleCallback = () => {
+  let newHref = ''
+  if (window.location.search) {
+    const searchObj = urlToParamsObj(window.location.href)
+    if (searchObj.callback) {
+      for (const k in searchObj) {
+        if (k === 'callback') {
+          newHref = searchObj[k]
+        } else {
+          if (newHref) {
+            newHref += `&${k}=${searchObj[k]}`
+          }
+        }
+      }
+    }
+  }
+  if (newHref) {
+    store.dispatch('user/newLoginCallback', newHref)
+  } else {
+    store.dispatch('user/removeLoginCallback')
+  }
+}
+
+handleCallback()
 </script>
 <style lang="scss" scoped>
 

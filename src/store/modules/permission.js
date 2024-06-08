@@ -6,7 +6,8 @@ export default {
   namespaced: true,
   state: {
     // 保存用户路由表
-    userRoutes: []
+    userRoutes: [],
+    backRoute: ''
   },
   mutations: {
     /**
@@ -15,9 +16,15 @@ export default {
     setRoutes (state, newRoutes) {
       // 增加新路由
       state.userRoutes = newRoutes
+    },
+    setBackRoute (state, route) {
+      state.backRoute = route
     }
   },
   actions: {
+    setBackRoute (context, route) {
+      context.commit('setBackRoute', route)
+    },
     /**
      * 根据权限筛选路由
      */

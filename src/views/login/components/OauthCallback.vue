@@ -15,8 +15,8 @@ const i18n = useI18n()
 const getToken = async () => {
   await restFull('/oauth/callback', 'GET',
     urlToParamsObj(window.location.href))
-    .then(data => {
-      store.dispatch('user/login', data.token)
+    .then(async data => {
+      await store.dispatch('user/login', data.token)
       ElMessage.success(i18n.t('msg.login.loginSuccess'))
     }).catch(
       () => {

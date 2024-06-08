@@ -22,11 +22,11 @@ router.beforeEach(async (to, from, next) => {
           router.addRoute(item)
         })
         // 添加完动态路由之后，需要在进行一次主动跳转
-        const search = window.location.search
-        if (search) {
-          return next(to.path + search)
-        }
-        return next(to.path)
+        // const search = window.location.search
+        // if (search) {
+        //   return next(to.path + search)
+        // }
+        return next(to.fullPath)
       }
       next()
     }
@@ -45,6 +45,7 @@ router.beforeEach(async (to, from, next) => {
     } else {
       if (whiteList.indexOf(from.path) === -1) {
         ElMessage.error('未登录')
+        await store.dispatch('permission/setBackRoute', to.fullPath)
       }
       next('/login')
     }

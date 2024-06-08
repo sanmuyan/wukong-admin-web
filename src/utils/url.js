@@ -8,3 +8,15 @@ export const urlToParamsObj = (url) => {
   })
   return paramsObj
 }
+
+export const getUrlPath = (url) => {
+  url = url.replace('/#/', '/')
+  const urlObj = new URL(url)
+  return urlObj.pathname
+}
+
+export const getUrlFullPath = (url) => {
+  url = url.replace('/#/', '/')
+  const urlObj = new URL(url)
+  return urlObj.pathname + urlObj.search
+}

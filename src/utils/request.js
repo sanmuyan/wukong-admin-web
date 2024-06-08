@@ -1,6 +1,7 @@
 import axios from 'axios'
 import store from '@/store'
 import { ElMessage } from 'element-plus'
+import { getUrlFullPath } from '@/utils/url'
 
 const service = axios.create({
   baseURL: '/api',
@@ -36,6 +37,7 @@ service.interceptors.response.use(
       ElMessage.error(message)
       if (code === 1401) {
         store.dispatch('user/logout').catch()
+        store.dispatch('permission/setBackRoute', getUrlFullPath(window.location.href)).catch()
       }
       return Promise.reject(new Error(message))
     }

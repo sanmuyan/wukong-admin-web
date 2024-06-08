@@ -36,7 +36,6 @@ const searchObj = ref({})
 const handleOauthAuthorize = async () => {
   await restFull('/oauth/authorize/frontRedirect', 'GET', searchObj.value)
     .then(data => {
-      console.log(data)
       if (data.error) {
         ElMessage.error(data.err)
         return

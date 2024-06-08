@@ -1,6 +1,6 @@
 import { restFull } from '@/api'
-import { getItem, removeItemAllItem, setItem } from '@/utils/storage'
-import { TOKEN_KEY } from '@/constant'
+import { getItem, removeItem, removeItemAllItem, setItem } from '@/utils/storage'
+import { LOGIN_CALLBACK, TOKEN_KEY } from '@/constant'
 import router from '@/router'
 import store from '@/store'
 import { setCookie } from '@/utils/cookie'
@@ -9,7 +9,8 @@ export default {
   namespaced: true,
   state: () => ({
     token: getItem(TOKEN_KEY) || '',
-    userProfile: {}
+    userProfile: {},
+    loginCallback: getItem(LOGIN_CALLBACK) || ''
   }),
   mutations: {
     setToken (state, token) {
@@ -19,18 +20,37 @@ export default {
     },
     setUserProfile (state, userProfile) {
       state.userProfile = userProfile
+    },
+    setLoginCallback (state, loginCallback) {
+      state.loginCallback = loginCallback
+      setItem(LOGIN_CALLBACK, loginCallback)
     }
   },
   actions: {
-    login (context, token) {
+    async login (context, token) {
       context.commit('setToken', token)
-      router.push('/').then()
+      const newHref = store.getters.loginCallback
+      if (newHref) {
+        window.location.replace(newHref)
+        await store.dispatch('user/removeLoginCallback')
+      } else {
+        const route = store.getters.backRoute || '/'
+        await router.push(route)
+      }
+    },
+    async newLoginCallback (context, newHref) {
+      context.commit('setLoginCallback', newHref)
+      setItem(LOGIN_CALLBACK, newHref)
+    },
+    async removeLoginCallback (context) {
+      context.commit('setLoginCallback', '')
+      removeItem(LOGIN_CALLBACK)
     },
     async userProfile (context) {
       const res = await restFull('/profile', 'GET')
       context.commit('setUserProfile', res)
     },
-    logout (context) {
+    async logout (context) {
       context.commit('setToken', '')
       context.commit('setUserProfile', {})
       removeItemAllItem()
