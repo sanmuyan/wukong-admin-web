@@ -26,6 +26,7 @@ import router from '@/router'
 import { useI18n } from 'vue-i18n'
 import { urlToParamsObj } from '@/utils/url'
 import { restFull } from '@/api'
+import { ElMessage } from 'element-plus'
 
 const i18n = useI18n()
 
@@ -33,8 +34,13 @@ const showDialog = ref(false)
 const searchObj = ref({})
 
 const handleOauthAuthorize = async () => {
-  await restFull('/oauth/authorize', 'GET', searchObj.value)
+  await restFull('/oauth/authorize/frontRedirect', 'GET', searchObj.value)
     .then(data => {
+      console.log(data)
+      if (data.error) {
+        ElMessage.error(data.err)
+        return
+      }
       window.location.replace(data.redirect_uri)
     })
 }

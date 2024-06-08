@@ -3,6 +3,7 @@ import { getItem, removeItemAllItem, setItem } from '@/utils/storage'
 import { TOKEN_KEY } from '@/constant'
 import router from '@/router'
 import store from '@/store'
+import { setCookie } from '@/utils/cookie'
 
 export default {
   namespaced: true,
@@ -14,6 +15,7 @@ export default {
     setToken (state, token) {
       state.token = token
       setItem(TOKEN_KEY, token)
+      setCookie('Authorization', `Bearer ${token}`, 30)
     },
     setUserProfile (state, userProfile) {
       state.userProfile = userProfile
@@ -32,6 +34,7 @@ export default {
       context.commit('setToken', '')
       context.commit('setUserProfile', {})
       removeItemAllItem()
+      setCookie('Authorization', '', -1)
       store.getters.userRoutes.forEach(route => {
         router.removeRoute(route.name)
       })

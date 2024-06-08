@@ -64,6 +64,7 @@ import { Unlock, UserFilled } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { restFull } from '@/api'
 import { useI18n } from 'vue-i18n'
+import { urlToParamsObj } from '@/utils/url'
 
 const i18n = useI18n()
 const loginForm = ref({
@@ -98,7 +99,23 @@ const handleLogin = async () => {
       .then(data => {
         store.dispatch('user/login', data.token)
         ElMessage.success(i18n.t('msg.login.loginSuccess'))
-        loading.value = false
+        const location = window.location
+        if (location.search) {
+          const searchObj = urlToParamsObj(location.href)
+          if (searchObj.callback) {
+            let newHref = ''
+            for (const k in searchObj) {
+              if (k === 'callback') {
+                newHref = searchObj[k]
+              } else {
+                if (newHref) {
+                  newHref += `&${k}=${searchObj[k]}`
+                }
+              }
+            }
+            window.location.replace(newHref)
+          }
+        }
       })
       .catch(() => {
         loading.value = false
