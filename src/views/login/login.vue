@@ -1,5 +1,5 @@
 <template>
-  <div class="login-container">
+  <div class="login-container" v-if="showLogin">
     <el-form
       v-loading="loading"
       class="login-form"
@@ -53,10 +53,19 @@
       </div>
     </el-form>
   </div>
+  <oauth-callback v-if="showOauthCallbackLogin">
+  </oauth-callback>
+  <mfa-app-login-dialog
+    v-model="showMfaAppLoginDialog">
+  </mfa-app-login-dialog>
+  <pass-key-login-dialog
+    v-model="showPassKeyLoginDialog"
+    :passKeyBeginLoginResponse="passKeyBeginLoginResponse">
+  </pass-key-login-dialog>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { provide, ref } from 'vue'
 import LangSelect from '@/components/LangSelect/index.vue'
 import { validatePassword } from '@/utils/rules'
 import { useStore } from 'vuex'
@@ -65,6 +74,9 @@ import { ElMessage } from 'element-plus'
 import { restFull } from '@/api'
 import { useI18n } from 'vue-i18n'
 import { urlToParamsObj } from '@/utils/url'
+import OauthCallback from './components/OauthCallback'
+import MfaAppLoginDialog from '@/views/mfa/components/MfaAppLoginDialog'
+import PassKeyLoginDialog from '@/views/passkey/components/PassKeyLoginDialog'
 
 const i18n = useI18n()
 const loginForm = ref({
@@ -91,14 +103,40 @@ const loginRules = ref({
 const loading = ref(false)
 const store = useStore()
 const loginFormRef = ref(null)
+const showMfaAppLoginDialog = ref(false)
+
+const handleLoginData = async (data) => {
+  // 判断是否需要 PassKey
+  if (data.pass_key_begin_login) {
+    showPassKeyLoginDialog.value = true
+    passKeyBeginLoginResponse.value = data.pass_key_begin_login
+    return
+  }
+  // 判断是否需要二次认证
+  if (data.mfa_begin_login) {
+    mfaLoginRequest.value = data.mfa_begin_login
+    switch (data.mfa_begin_login.mfa_provider) {
+      case 'mfa_app':
+        showMfaAppLoginDialog.value = true
+        break
+      default:
+        break
+    }
+    return
+  }
+  await store.dispatch('user/login', data.token)
+  ElMessage.success(i18n.t('msg.login.loginSuccess'))
+}
+provide('handleLoginData', handleLoginData)
+
+// 处理账号密码登录
 const handleLogin = async () => {
   loginFormRef.value.validate(valid => {
     if (!valid) return
     loading.value = true
     restFull('/login', 'POST', loginForm.value)
       .then(async data => {
-        await store.dispatch('user/login', data.token)
-        ElMessage.success(i18n.t('msg.login.loginSuccess'))
+        await handleLoginData(data)
       })
       .catch(() => {
         loading.value = false
@@ -106,6 +144,7 @@ const handleLogin = async () => {
   })
 }
 
+// 处理第三方登录
 const handleOauthLogin = async (provider) => {
   restFull('/oauth/login', 'GET', { provider: provider })
     .then(data => {
@@ -113,6 +152,41 @@ const handleOauthLogin = async (provider) => {
     })
 }
 
+// 处理二次认证登录
+const mfaLoginRequest = {}
+
+const handleMfaFinishLogin = async (mfaCode) => {
+  if (!mfaCode) {
+    return
+  }
+  mfaLoginRequest.value.code = mfaCode
+  await restFull('/mfaFinishLogin', 'POST', mfaLoginRequest.value)
+    .then(async data => {
+      await handleLoginData(data)
+    })
+  mfaAppLoginDialogClosed()
+}
+provide('handleMfaFinishLogin', handleMfaFinishLogin)
+
+const mfaAppLoginDialogClosed = () => {
+  loading.value = false
+  mfaLoginRequest.value = {}
+}
+
+provide('mfaAppLoginDialogClosed', mfaAppLoginDialogClosed)
+
+// 处理 PassKey 登录
+const showPassKeyLoginDialog = ref(false)
+const passKeyBeginLoginResponse = ref({})
+
+const passKeyLoginDialogClosed = () => {
+  loading.value = false
+  passKeyBeginLoginResponse.value = {}
+}
+
+provide('passKeyLoginDialogClosed', passKeyLoginDialogClosed)
+
+// 处理登录后需要跳转的情况，比如 /login?callback=https://www.baidu.com 登录后会跳转到 https://www.baidu.com
 const handleCallback = () => {
   let newHref = ''
   if (window.location.search) {
@@ -136,7 +210,25 @@ const handleCallback = () => {
   }
 }
 
-handleCallback()
+const showLogin = ref(false)
+const showOauthCallbackLogin = ref(false)
+
+const handleViewRouter = () => {
+  switch (window.location.pathname) {
+    case '/oauth/callback':
+      showOauthCallbackLogin.value = true
+      break
+    case '/login':
+      showLogin.value = true
+      handleCallback()
+      break
+    default:
+      break
+  }
+}
+
+handleViewRouter()
+
 </script>
 <style lang="scss" scoped>
 

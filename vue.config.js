@@ -1,4 +1,5 @@
 const path = require('path')
+const fs = require('fs')
 
 function resolve (dir) {
   return path.join(__dirname, dir)
@@ -16,7 +17,22 @@ module.exports = defineConfig({
     }
   },
   devServer: {
-    allowedHosts: ['all']
+    allowedHosts: ['all'],
+    host: process.env.SERVER_HOST || 'localhost',
+    port: process.env.SERVER_PORT || 8080,
+    https: process.env.SSL_ON === 'yes',
+    server: {
+      options: {
+        key: fs.readFileSync(path.resolve(__dirname, process.env.SSL_KEY_PATH)),
+        cert: fs.readFileSync(path.resolve(__dirname, process.env.SSL_CERT_PATH))
+      }
+    },
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8081',
+        changeOrigin: true
+      }
+    }
   },
   chainWebpack (config) {
     config.resolve.alias.set('vue-i18n', 'vue-i18n/dist/vue-i18n.cjs.js')

@@ -16,24 +16,46 @@
       <el-table :data="oauthAppList" style="width: 80%">
         <el-table-column type="expand">
           <template #default="{ row }">
-            <div class="table-show-container">
-              <div>应用 ID</div>
-              <span>{{ row.client_id }}</span>
-              <div>应用密钥</div>
-              <span>{{ row.client_secret }}</span>
-              <div>重定向 URI</div>
-              <ul v-if="row.redirect_uri_list">
-                <li v-for="item in row.redirect_uri_list" :key="item">
-                  {{ item }}
-                </li>
-              </ul>
-              <div>Scope</div>
-              <ul v-if="row.scope_list">
-                <li v-for="item in row.scope_list" :key="item">
-                  {{ item }}
-                </li>
-              </ul>
-            </div>
+            <el-descriptions
+              :column="1"
+              direction="vertical"
+              border
+            >
+              <el-descriptions-item label="应用 ID">{{ row.client_id }}</el-descriptions-item>
+              <el-descriptions-item label="应用密钥">{{ row.client_secret }}</el-descriptions-item>
+              <el-descriptions-item label="重定向 URI">
+                <ul v-if="row.redirect_uri_list" style="margin-left: 10px">
+                  <li v-for="item in row.redirect_uri_list" :key="item">
+                    {{ item }}
+                  </li>
+                </ul>
+              </el-descriptions-item>
+              <el-descriptions-item label="Scope">
+                <ul v-if="row.scope_list" style="margin-left: 10px">
+                  <li v-for="item in row.scope_list" :key="item">
+                    {{ item }}
+                  </li>
+                </ul>
+              </el-descriptions-item>
+            </el-descriptions>
+<!--            <div class="table-show-container">-->
+<!--              <div>应用 ID</div>-->
+<!--              <span>{{ row.client_id }}</span>-->
+<!--              <div>应用密钥</div>-->
+<!--              <span>{{ row.client_secret }}</span>-->
+<!--              <div>重定向 URI</div>-->
+<!--              <ul v-if="row.redirect_uri_list">-->
+<!--                <li v-for="item in row.redirect_uri_list" :key="item">-->
+<!--                  {{ item }}-->
+<!--                </li>-->
+<!--              </ul>-->
+<!--              <div>Scope</div>-->
+<!--              <ul v-if="row.scope_list">-->
+<!--                <li v-for="item in row.scope_list" :key="item">-->
+<!--                  {{ item }}-->
+<!--                </li>-->
+<!--              </ul>-->
+<!--            </div>-->
           </template>
         </el-table-column>
         <el-table-column prop="app_name" label="应用名称" width="180"/>

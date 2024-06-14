@@ -36,6 +36,7 @@ export default {
       } else {
         const route = store.getters.backRoute || '/'
         await router.push(route)
+        await store.dispatch('permission/setBackRoute', '')
       }
     },
     async newLoginCallback (context, newHref) {
@@ -55,9 +56,6 @@ export default {
       context.commit('setUserProfile', {})
       removeItemAllItem()
       setCookie('Authorization', '', -1)
-      store.getters.userRoutes.forEach(route => {
-        router.removeRoute(route.name)
-      })
       router.push('/login').then()
     }
   }

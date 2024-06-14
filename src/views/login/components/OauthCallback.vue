@@ -4,28 +4,25 @@
 
 <script setup>
 import { restFull } from '@/api'
-import store from '@/store'
-import { ElMessage } from 'element-plus'
-import { useI18n } from 'vue-i18n'
 import { urlToParamsObj } from '@/utils/url'
 import router from '@/router'
+import { inject } from 'vue'
+const handleLoginData = inject('handleLoginData')
 
-const i18n = useI18n()
-
-const getToken = async () => {
+const handleOauthCallback = async () => {
   await restFull('/oauth/callback', 'GET',
     urlToParamsObj(window.location.href))
     .then(async data => {
-      await store.dispatch('user/login', data.token)
-      ElMessage.success(i18n.t('msg.login.loginSuccess'))
-    }).catch(
+      await handleLoginData(data)
+    })
+    .catch(
       () => {
         router.push('/login')
       }
     )
 }
 
-getToken()
+handleOauthCallback()
 
 </script>
 

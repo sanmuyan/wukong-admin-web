@@ -9,3 +9,17 @@ export const validatePassword = () => {
     }
   }
 }
+
+const isNumber = (value) => {
+  return /^\d+$/.test(value)
+}
+
+export const validateNumber = () => {
+  return (rule, value, callback) => {
+    if (!isNumber(value)) {
+      callback(new Error(i18n.global.t('msg.rules.mustNumber')))
+    } else {
+      callback()
+    }
+  }
+}

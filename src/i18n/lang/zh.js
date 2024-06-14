@@ -8,11 +8,14 @@ export default {
     loginFail: '登录失败',
     otherLogin: '其他方式',
     isApproveLogin: '是否允许登录',
+    mfaAppCodeDialogTitle: '请输入验证码',
     desc: `
     `
   },
   route: {
     profile: '个人中心',
+    profileManage: '个人信息',
+    securityManage: '账号安全',
     user: '用户管理',
     userManage: '用户管理',
     roleManage: '用户角色',
@@ -43,5 +46,8 @@ export default {
     confirm: '确定',
     approve: '批准',
     deny: '拒绝'
+  },
+  rules: {
+    mustNumber: '请输入数字'
   }
 }

@@ -1,9 +1,6 @@
-import router from '@/router'
+import router, { personalRoutes, whiteList } from '@/router'
 import store from '@/store'
 import { ElMessage } from 'element-plus'
-
-// 白名单
-const whiteList = ['/login', '/oauth/callback']
 
 // 路由前置守卫
 router.beforeEach(async (to, from, next) => {
@@ -15,6 +12,10 @@ router.beforeEach(async (to, from, next) => {
       // 判断用户信息是否存在，不存在则获取用户信息
       if (!store.getters.hasUserProfile) {
         await store.dispatch('user/userProfile')
+        // 添加用户个人路由
+        personalRoutes.forEach(item => {
+          router.addRoute(item)
+        })
         // 处理用户权限，筛选出需要添加的权限
         const filterRoutes = await store.dispatch('permission/filterRoutes')
         // 利用 addRoute 循环添加
@@ -40,10 +41,10 @@ router.beforeEach(async (to, from, next) => {
     //     return
     //   }
     // }
-    if (whiteList.indexOf(to.path) > -1) {
+    if (whiteList.includes(to.path)) {
       next()
     } else {
-      if (whiteList.indexOf(from.path) === -1) {
+      if (!whiteList.includes(from.path)) {
         ElMessage.error('未登录')
         await store.dispatch('permission/setBackRoute', to.fullPath)
       }
