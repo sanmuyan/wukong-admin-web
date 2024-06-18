@@ -50,6 +50,14 @@
         >
           GitLab
         </el-button>
+        <el-button
+          type="info"
+          size="small"
+          round
+          @click="handlePassKeyBeginLogin()"
+        >
+          通行密钥
+        </el-button>
       </div>
     </el-form>
   </div>
@@ -58,10 +66,15 @@
   <mfa-app-login-dialog
     v-model="showMfaAppLoginDialog">
   </mfa-app-login-dialog>
-  <pass-key-login-dialog
-    v-model="showPassKeyLoginDialog"
+  <pass-key-finish-login-dialog
+    v-model="showPassKeyFinishLoginDialog"
     :passKeyBeginLoginResponse="passKeyBeginLoginResponse">
-  </pass-key-login-dialog>
+  </pass-key-finish-login-dialog>
+  <pass-key-begin-login-dialog
+    v-model="showPassKeyBeginLoginDialog"
+    :username="loginForm.username"
+  >
+  </pass-key-begin-login-dialog>
 </template>
 
 <script setup>
@@ -76,7 +89,8 @@ import { useI18n } from 'vue-i18n'
 import { urlToParamsObj } from '@/utils/url'
 import OauthCallback from './components/OauthCallback'
 import MfaAppLoginDialog from '@/views/mfa/components/MfaAppLoginDialog'
-import PassKeyLoginDialog from '@/views/passkey/components/PassKeyLoginDialog'
+import PassKeyFinishLoginDialog from '@/views/passkey/components/PassKeyFinishLoginDialog.vue'
+import PassKeyBeginLoginDialog from '@/views/passkey/components/PassKeyBeginLoginDialog.vue'
 
 const i18n = useI18n()
 const loginForm = ref({
@@ -108,8 +122,7 @@ const showMfaAppLoginDialog = ref(false)
 const handleLoginData = async (data) => {
   // 判断是否需要 PassKey
   if (data.pass_key_begin_login) {
-    showPassKeyLoginDialog.value = true
-    passKeyBeginLoginResponse.value = data.pass_key_begin_login
+    handlePassKeyFinishLogin(data.pass_key_begin_login)
     return
   }
   // 判断是否需要二次认证
@@ -176,15 +189,31 @@ const mfaAppLoginDialogClosed = () => {
 provide('mfaAppLoginDialogClosed', mfaAppLoginDialogClosed)
 
 // 处理 PassKey 登录
-const showPassKeyLoginDialog = ref(false)
+const showPassKeyFinishLoginDialog = ref(false)
 const passKeyBeginLoginResponse = ref({})
 
-const passKeyLoginDialogClosed = () => {
+const handlePassKeyFinishLogin = (data) => {
+  passKeyBeginLoginResponse.value = data
+  showPassKeyFinishLoginDialog.value = true
+}
+
+const passKeyFinishLoginDialogClosed = () => {
   loading.value = false
   passKeyBeginLoginResponse.value = {}
 }
 
-provide('passKeyLoginDialogClosed', passKeyLoginDialogClosed)
+provide('passKeyFinishLoginDialogClosed', passKeyFinishLoginDialogClosed)
+
+const showPassKeyBeginLoginDialog = ref(false)
+const handlePassKeyBeginLogin = () => {
+  showPassKeyBeginLoginDialog.value = true
+}
+
+const passKeyBeginLoginDialogClosed = () => {
+}
+
+provide('passKeyBeginLoginDialogClosed', passKeyBeginLoginDialogClosed)
+provide('handlePassKeyFinishLogin', handlePassKeyFinishLogin)
 
 // 处理登录后需要跳转的情况，比如 /login?callback=https://www.baidu.com 登录后会跳转到 https://www.baidu.com
 const handleCallback = () => {

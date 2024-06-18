@@ -1,21 +1,33 @@
 <template>
-  <el-dialog v-model="modelValue" width="350px" draggable title="确认通行密钥" @close="closed">
+  <el-dialog
+    v-loading="loading"
+    v-model="modelValue"
+    width="350px"
+    draggable
+    title="确认通行密钥"
+    center
+    :show-close="false"
+    :close-on-click-modal="false"
+    @open="open"
+    @close="closed">
   </el-dialog>
 </template>
 
 <script setup>
-import { defineModel, inject, watch } from 'vue'
+import { defineModel, inject, ref, watch } from 'vue'
 import { base64ToUint8Array, uint8ArrayToBase64 } from '@/utils/encode'
 import { restFull } from '@/api'
 import { ElMessage } from 'element-plus'
 
+const loading = ref(false)
+
 // 父组件传入的值
 const modelValue = defineModel({ required: true })
 const beginLoginResponse = defineModel('passKeyBeginLoginResponse', { required: true })
-const passKeyLoginDialogClosed = inject('passKeyLoginDialogClosed')
+const finishLoginDialogClosed = inject('passKeyFinishLoginDialogClosed')
 const handleLoginData = inject('handleLoginData')
 
-const handleGetUserPassKey = async () => {
+const handlePassKeyFinishLogin = async () => {
   const publicKey = beginLoginResponse.value.options.publicKey
   publicKey.challenge = base64ToUint8Array(publicKey.challenge)
   publicKey.allowCredentials.forEach(item => {
@@ -46,7 +58,7 @@ const handleGetUserPassKey = async () => {
           userHandle: uint8ArrayToBase64(userHandle)
         }
       })
-      restFull(`/passKeyFinishLogin?username=${beginLoginResponse.value.username}&session_id=${beginLoginResponse.value.session_id}`, 'POST', assertionRequest)
+      restFull(`/passKeyFinishLogin?session_id=${beginLoginResponse.value.session_id}`, 'POST', assertionRequest)
         .then((data) => {
           handleLoginData(data)
         })
@@ -62,13 +74,15 @@ watch(
   () => modelValue.value,
   val => {
     if (val) {
-      handleGetUserPassKey()
+      loading.value = true
+      handlePassKeyFinishLogin()
     }
   })
 
 const closed = () => {
   modelValue.value = false
-  passKeyLoginDialogClosed()
+  loading.value = false
+  finishLoginDialogClosed()
 }
 
 </script>

@@ -14,10 +14,10 @@
     <!--    获取列表-->
     <el-card>
       <el-table :data="roleList" style="width: 80%">
-        <el-table-column prop="role_name" label="角色名" width="180"/>
-        <el-table-column prop="access_level" label="角色等级" width="180"/>
-        <el-table-column prop="comment" label="描述" width="180"/>
-        <el-table-column label="操作" fixed="right" width="300">
+        <el-table-column prop="role_name" label="角色名"/>
+        <el-table-column prop="access_level" label="角色等级"/>
+        <el-table-column prop="comment" label="描述"/>
+        <el-table-column label="操作" fixed="right">
           <template #default="{ row }">
             <el-button type="primary" size="small" @click="handleRoleEdit(row)">编辑</el-button>
             <el-button type="primary" size="small" @click="handleResourceEdit(row)">权限</el-button>

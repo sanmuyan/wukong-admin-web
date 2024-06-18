@@ -42,7 +42,7 @@ const modelValue = defineModel({ required: true })
 
 const passKeys = ref([])
 const getPassKeys = async () => {
-  await restFull('/profile/passKeys', 'GET')
+  await restFull('/account/passKey', 'GET')
     .then(res => {
       passKeys.value = res.pass_keys
       passKeys.value.forEach(item => {
@@ -69,7 +69,7 @@ const handlePassKeyEdit = async (row) => {
 }
 
 const handleDeletePassKey = async (row) => {
-  restFull('/profile/passKey', 'DELETE', { id: row.id })
+  restFull('/account/passKey', 'DELETE', { id: row.id })
     .then(() => {
       getPassKeys()
     })

@@ -29,10 +29,10 @@
         <el-input v-model="oauthApp.comment"></el-input>
       </el-form-item>
     </el-form>
-    <div class="dialog-button">
-      <el-button type="primary" size="small" @click="handleButtonClosed">取消</el-button>
-      <el-button type="primary" size="small" @click="handleButtonApply">提交</el-button>
-    </div>
+    <template #footer>
+      <el-button type="primary" size="small" @click="handleButtonCancel">取消</el-button>
+      <el-button type="primary" size="small" @click="handleButtonSubmit">提交</el-button>
+    </template>
   </el-dialog>
 </template>
 
@@ -99,7 +99,7 @@ const updateOauthApp = async () => {
   if (oauthApp.value.redirect_uri) {
     oauthApp.value.redirect_uri = oauthApp.value.redirect_uri.replace(/\n/g, ',').replace(/,\s*$/gm, '')
   }
-  await restFull('/oauth/app', 'PUT', oauthApp.value)
+  await restFull('/app/oauth', 'PUT', oauthApp.value)
     .then(() => {
       ElMessage.success(i18n.t('msg.appMain.updateSuccess'))
       closed()
@@ -107,7 +107,7 @@ const updateOauthApp = async () => {
     })
 }
 
-const handleButtonApply = () => {
+const handleButtonSubmit = () => {
   formRef.value.validate(valid => {
     if (valid) {
       updateOauthApp()
@@ -115,7 +115,7 @@ const handleButtonApply = () => {
   })
 }
 
-const handleButtonClosed = () => {
+const handleButtonCancel = () => {
   closed()
 }
 

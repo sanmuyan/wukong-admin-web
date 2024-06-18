@@ -110,7 +110,7 @@ const totalCount = ref(0)
 const oauthAppQueryData = ref('')
 
 const getOauthApps = async () => {
-  const res = await restFull('/oauth/app', 'GET', {
+  const res = await restFull('/app/oauth', 'GET', {
     page_number: pageNumber.value,
     page_size: pageSize.value,
     query: oauthAppQueryData.value
@@ -167,7 +167,7 @@ const handleOauthAppCreate = () => {
 
 // 删除
 const deleteOauthApp = async (oauthApp) => {
-  await restFull('/oauth/app', 'DELETE', {
+  await restFull('/app/oauth', 'DELETE', {
     id: oauthApp.id
   })
     .then(() => {

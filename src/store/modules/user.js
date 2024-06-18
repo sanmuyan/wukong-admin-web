@@ -48,7 +48,7 @@ export default {
       removeItem(LOGIN_CALLBACK)
     },
     async userProfile (context) {
-      const res = await restFull('/profile', 'GET')
+      const res = await restFull('/account/profile', 'GET')
       context.commit('setUserProfile', res)
     },
     async logout (context) {

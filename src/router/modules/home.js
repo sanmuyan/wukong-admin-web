@@ -3,26 +3,26 @@ const menuSubIcon = 'menu-sub'
 export default {
   path: '/',
   component: layout,
-  redirect: '/profile',
-  name: 'profile',
+  redirect: '/account/profile',
+  name: 'home',
   meta: {
-    title: 'profile',
+    title: 'home',
     icon: 'dashboard'
   },
   children: [
     {
-      path: '/profile',
+      path: '/account/profile',
       name: 'profileManage',
-      component: () => import('@/views/profile/profile'),
+      component: () => import('@/views/home/profile.vue'),
       meta: {
         title: 'profileManage',
         icon: menuSubIcon
       }
     },
     {
-      path: '/security',
+      path: '/account/security',
       name: 'securityManage',
-      component: () => import('@/views/profile/security'),
+      component: () => import('@/views/home/security.vue'),
       meta: {
         title: 'securityManage',
         icon: menuSubIcon

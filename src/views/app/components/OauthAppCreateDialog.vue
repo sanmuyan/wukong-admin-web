@@ -4,12 +4,6 @@
       <el-form-item label="应用名称" label-width="100px" prop="app_name">
         <el-input v-model="oauthApp.app_name"></el-input>
       </el-form-item>
-      <el-form-item label="应用 ID" label-width="100px" prop="client_id">
-        <el-input v-model="oauthApp.client_id" disabled></el-input>
-      </el-form-item>
-      <el-form-item label="应用秘钥" label-width="100px" prop="client_secret">
-        <el-input v-model="oauthApp.client_secret" disabled></el-input>
-      </el-form-item>
       <el-form-item label="重定向 URI" label-width="100px" prop="redirect_uri">
         <el-input
           v-model="oauthApp.redirect_uri"
@@ -29,19 +23,18 @@
         <el-input v-model="oauthApp.comment"></el-input>
       </el-form-item>
     </el-form>
-    <div class="dialog-button">
-      <el-button type="primary" size="small" @click="handleButtonClosed">取消</el-button>
-      <el-button type="primary" size="small" @click="handleButtonApply">提交</el-button>
-    </div>
+    <template #footer>
+      <el-button type="primary" size="small" @click="handleButtonCancel">取消</el-button>
+      <el-button type="primary" size="small" @click="handleButtonSubmit">提交</el-button>
+    </template>
   </el-dialog>
 </template>
 
 <script setup>
 import { restFull } from '@/api'
 import { ElMessage } from 'element-plus'
-import { defineModel, inject, ref, watch } from 'vue'
+import { defineModel, inject, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { generateUuid } from '@/utils/uuid'
 
 const i18n = useI18n()
 const formRef = ref(null)
@@ -53,20 +46,6 @@ const oauthApp = ref({})
 
 const formRules = ref({
   app_name: [
-    {
-      required: true,
-      trigger: 'blur',
-      message: i18n.t('msg.appMain.isRequired')
-    }
-  ],
-  client_id: [
-    {
-      required: true,
-      trigger: 'blur',
-      message: i18n.t('msg.appMain.isRequired')
-    }
-  ],
-  client_secret: [
     {
       required: true,
       trigger: 'blur',
@@ -99,7 +78,7 @@ const createOauth = async () => {
   if (oauthApp.value.redirect_uri) {
     oauthApp.value.redirect_uri = oauthApp.value.redirect_uri.replace(/\n/g, ',').replace(/,\s*$/gm, '')
   }
-  await restFull('/oauth/app', 'POST', oauthApp.value)
+  await restFull('/app/oauth', 'POST', oauthApp.value)
     .then(() => {
       ElMessage.success(i18n.t('msg.appMain.createSuccess'))
       closed()
@@ -107,7 +86,7 @@ const createOauth = async () => {
     })
 }
 
-const handleButtonApply = () => {
+const handleButtonSubmit = () => {
   formRef.value.validate(valid => {
     if (valid) {
       createOauth()
@@ -115,7 +94,7 @@ const handleButtonApply = () => {
   })
 }
 
-const handleButtonClosed = () => {
+const handleButtonCancel = () => {
   closed()
 }
 
@@ -126,21 +105,6 @@ const closed = () => {
   scopeProfile.value = false
   scopeApi.value = false
 }
-
-// 使用uuid 生成 client_id 和 client_secret
-watch(
-  () => modelValue.value,
-  val => {
-    if (val) {
-      generateClient()
-    }
-  }
-)
-const generateClient = () => {
-  oauthApp.value.client_id = generateUuid()
-  oauthApp.value.client_secret = generateUuid()
-}
-
 </script>
 
 <style scoped>

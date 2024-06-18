@@ -14,8 +14,8 @@
     <!--    获取列表-->
     <el-card>
       <el-table :data="resourceList" style="width: 80%">
-        <el-table-column prop="resource_path" label="路径" width="180"/>
-        <el-table-column prop="is_access_control" label="鉴权" width="180">
+        <el-table-column prop="resource_path" label="路径"/>
+        <el-table-column prop="is_access_control" label="鉴权">
           <template #default="{ row }">
             <el-tag
               :type="row.is_auth === 1 ? 'danger' : 'success'"
@@ -25,8 +25,8 @@
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="comment" label="描述" width="180"/>
-        <el-table-column label="操作" fixed="right" width="300">
+        <el-table-column prop="comment" label="描述"/>
+        <el-table-column label="操作" fixed="right">
           <template #default="{ row }">
             <el-button type="primary" size="small" @click="handleResourceEdit(row)">编辑</el-button>
             <el-popconfirm @confirm="deleteResource(row)" title="确定删除吗？">

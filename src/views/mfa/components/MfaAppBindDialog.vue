@@ -1,12 +1,12 @@
 <template>
   <el-dialog @close="closed" v-model="modelValue" width="320px" draggable title="绑定 MFA">
     <div v-if="isTimeout">
-      <el-button type="warning" class="m-2" @click="beginMfaBind">超时刷新</el-button>
+      <el-button type="warning" class="m-2" @click="beginMfaAppBind">超时刷新</el-button>
     </div>
     <div v-if="!isTimeout"  class="mfa-bind-container">
       <div>请使用 MFA 应用扫码</div>
       <div class="mfa-bind-qrcode">
-        <el-image v-if="mfaImageURL" :src="mfaImageURL"/>
+        <el-image v-if="mfaAppImageURL" :src="mfaAppImageURL"/>
       </div>
       <div>
         <el-popover
@@ -31,8 +31,8 @@
       </div>
     </div>
     <template #footer>
-      <el-button type="primary" size="small" @click="handleButtonClosed">取消</el-button>
-      <el-button :disabled="isTimeout" type="primary" size="small" @click="handleButtonApply">提交</el-button>
+      <el-button type="primary" size="small" @click="handleButtonCancel">取消</el-button>
+      <el-button :disabled="isTimeout" type="primary" size="small" @click="handleButtonSubmit">提交</el-button>
     </template>
   </el-dialog>
 </template>
@@ -71,14 +71,16 @@ const formRules = ref({
 const isTimeout = ref(false)
 
 const mfaBindReq = ref({
+  session_id: '',
   totp_secret: '',
   totp_code: ''
 })
 
 const beginMfaAppBind = async () => {
-  await restFull('/profile/mfaAppBeginBind', 'GET')
+  await restFull('/account/mfaAppBeginBind', 'GET')
     .then(async (res) => {
       mfaBindReq.value.totp_secret = res.totp_secret
+      mfaBindReq.value.session_id = res.session_id
       mfaAppImageURL.value = await generateQrCode(res.qr_code_uri)
       isTimeout.value = false
       if (res.timeout_min) {
@@ -103,14 +105,14 @@ watch(
 )
 
 const finishMfaAppBind = async () => {
-  await restFull('/profile/mfaAppFinishBind', 'POST', mfaBindReq.value)
+  await restFull('/account/mfaAppFinishBind', 'POST', mfaBindReq.value)
     .then(() => {
       getMfaAppStatus()
       closed()
     })
 }
 
-const handleButtonApply = () => {
+const handleButtonSubmit = () => {
   formRef.value.validate(valid => {
     if (valid) {
       finishMfaAppBind()
@@ -118,12 +120,13 @@ const handleButtonApply = () => {
   })
 }
 
-const handleButtonClosed = () => {
+const handleButtonCancel = () => {
   closed()
 }
 
 const closed = () => {
   modelValue.value = false
+  mfaBindReq.value.session_id = ''
   mfaBindReq.value.totp_secret = ''
   mfaBindReq.value.totp_code = ''
   formRef.value.clearValidate()

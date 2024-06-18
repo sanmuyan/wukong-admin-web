@@ -14,11 +14,11 @@
     <!--    获取列表-->
     <el-card>
       <el-table :data="userList" style="width: 80%" v-loading="loading">
-        <el-table-column prop="username" label="用户名" width="180"/>
-        <el-table-column prop="display_name" label="显示名" width="180"/>
-        <el-table-column prop="email" label="邮箱" width="180"/>
-        <el-table-column prop="mobile" label="手机号" width="180"/>
-        <el-table-column prop="is_access_control" label="用户状态" width="180">
+        <el-table-column prop="username" label="用户名"/>
+        <el-table-column prop="display_name" label="显示名"/>
+        <el-table-column prop="email" label="邮箱" />
+        <el-table-column prop="mobile" label="手机号"/>
+        <el-table-column prop="is_access_control" label="用户状态">
           <template #default="{ row }">
             <el-tag
               :type="row.is_active === 1 ? 'success' : 'danger'"
@@ -28,7 +28,7 @@
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="操作" fixed="right" width="300">
+        <el-table-column label="操作" fixed="right">
           <template #default="{ row }">
             <el-button type="primary" size="small" @click="handleUserEdit(row)">编辑</el-button>
             <el-button type="primary" size="small" @click="handleRoleEdit(row)">角色</el-button>

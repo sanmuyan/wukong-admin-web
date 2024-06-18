@@ -13,8 +13,8 @@ export default {
     `
   },
   route: {
-    profile: '个人中心',
-    profileManage: '个人信息',
+    home: '我的主页',
+    profileManage: '账号资料',
     securityManage: '账号安全',
     user: '用户管理',
     userManage: '用户管理',

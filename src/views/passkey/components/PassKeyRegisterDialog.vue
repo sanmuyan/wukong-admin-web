@@ -17,10 +17,11 @@ import { ElMessage } from 'element-plus'
 // 父组件传入的值
 const modelValue = defineModel({ required: true })
 
-const handleRegistrationPassKey = async () => {
-  await restFull('/profile/passKeyBeginRegistration', 'GET')
+const handleRegisterPassKey = async () => {
+  await restFull('/account/passKeyBeginRegistration', 'GET')
     .then(async (res) => {
-      const publicKey = res.publicKey
+      const publicKey = res.options.publicKey
+      const sessionId = res.session_id
       publicKey.challenge = base64ToUint8Array(publicKey.challenge)
       publicKey.user.id = base64ToUint8Array(publicKey.user.id)
       await navigator.credentials.create({ publicKey })
@@ -37,7 +38,7 @@ const handleRegistrationPassKey = async () => {
               clientDataJSON: uint8ArrayToBase64(clientDataJSON)
             }
           })
-          await restFull('/profile/passKeyFinishRegistration', 'POST', attestationResponse)
+          await restFull(`/account/passKeyFinishRegistration?session_id=${sessionId}`, 'POST', attestationResponse)
             .then(() => {
               ElMessage.success('注册成功')
             })
@@ -50,7 +51,7 @@ const handleRegistrationPassKey = async () => {
 }
 
 const handleButtonSubmit = () => {
-  handleRegistrationPassKey()
+  handleRegisterPassKey()
   closed()
 }
 

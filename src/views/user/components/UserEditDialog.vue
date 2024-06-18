@@ -22,10 +22,10 @@
         </el-select>
       </el-form-item>
     </el-form>
-    <div class="dialog-button">
-      <el-button type="primary" size="small" @click="handleButtonClosed">取消</el-button>
-      <el-button type="primary" size="small" @click="handleButtonApply">提交</el-button>
-    </div>
+    <template #footer>
+      <el-button type="primary" size="small" @click="handleButtonCancel">取消</el-button>
+      <el-button type="primary" size="small" @click="handleButtonSubmit">提交</el-button>
+    </template>
   </el-dialog>
 </template>
 
@@ -115,7 +115,7 @@ const updateUser = async () => {
     })
 }
 
-const handleButtonApply = () => {
+const handleButtonSubmit = () => {
   formRef.value.validate(valid => {
     if (valid) {
       updateUser()
@@ -123,7 +123,7 @@ const handleButtonApply = () => {
   })
 }
 
-const handleButtonClosed = () => {
+const handleButtonCancel = () => {
   closed()
 }
 

@@ -52,7 +52,7 @@ watch(
 )
 
 const updateData = async () => {
-  await restFull('/profile/passKey', 'PUT', { id: passKey.value.id, display_name: passKey.value.display_name })
+  await restFull('/account/passKey', 'PUT', { id: passKey.value.id, display_name: passKey.value.display_name })
     .then(() => {
       ElMessage.success(i18n.t('msg.appMain.updateSuccess'))
       closed()
