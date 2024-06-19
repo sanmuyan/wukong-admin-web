@@ -102,7 +102,7 @@ const handleModifyPassword = () => {
 const handleLogoutAll = async () => {
   await restFull('/logout/all', 'POST')
     .then(() => {
-      store.dispatch('user/logout')
+      store.dispatch('login/logout')
       ElMessage.success('注销成功')
     })
 }

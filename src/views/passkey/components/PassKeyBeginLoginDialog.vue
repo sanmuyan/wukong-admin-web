@@ -1,5 +1,5 @@
 <template>
-  <el-dialog v-model="modelValue" width="350px" draggable title="确认通行密钥" @close="closed">
+  <el-dialog v-model="modelValue" width="350px" draggable title="通行密钥登录" @close="closed">
     <el-form :model="passKeyBeginLoginRequest" :rules="formRules" ref="formRef">
       <el-form-item prop="username">
         <el-input

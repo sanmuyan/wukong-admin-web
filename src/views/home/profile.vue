@@ -36,23 +36,23 @@ const user = ref({})
 const roles = ref([])
 const menus = ref([])
 
-const getUserProfile = async () => {
-  const userProfile = store.getters.userProfile
-  user.value = userProfile.user || {}
-  roles.value = userProfile.roles || []
-  menus.value = userProfile.menus || []
+const getAccountProfile = async () => {
+  const accountProfile = store.getters.accountProfile
+  user.value = accountProfile.user || {}
+  roles.value = accountProfile.roles || []
+  menus.value = accountProfile.menus || []
   if (roles.value.length === 0) {
     roles.value.push('未绑定角色')
   }
 }
 
-const refreshUserProfile = async () => {
-  await store.dispatch('user/userProfile')
-  await getUserProfile()
+const refreshAccountProfile = async () => {
+  await store.dispatch('login/accountProfile')
+  await getAccountProfile()
 }
-provide('refreshUserProfile', refreshUserProfile)
+provide('refreshAccountProfile', refreshAccountProfile)
 
-getUserProfile()
+getAccountProfile()
 
 // 编辑
 const dialogProfileEditShow = ref(false)

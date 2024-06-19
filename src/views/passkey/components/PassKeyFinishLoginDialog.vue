@@ -4,18 +4,17 @@
     v-model="modelValue"
     width="350px"
     draggable
-    title="确认通行密钥"
+    title="正在确认通行密钥..."
     center
     :show-close="false"
     :close-on-click-modal="false"
-    @open="open"
     @close="closed">
   </el-dialog>
 </template>
 
 <script setup>
 import { defineModel, inject, ref, watch } from 'vue'
-import { base64ToUint8Array, uint8ArrayToBase64 } from '@/utils/encode'
+import { passKeyDecode, passKeyEncode } from '@/utils/encode'
 import { restFull } from '@/api'
 import { ElMessage } from 'element-plus'
 
@@ -29,9 +28,9 @@ const handleLoginData = inject('handleLoginData')
 
 const handlePassKeyFinishLogin = async () => {
   const publicKey = beginLoginResponse.value.options.publicKey
-  publicKey.challenge = base64ToUint8Array(publicKey.challenge)
+  publicKey.challenge = passKeyDecode(publicKey.challenge)
   publicKey.allowCredentials.forEach(item => {
-    item.id = base64ToUint8Array(item.id)
+    item.id = passKeyDecode(item.id)
   })
   const credentialRequestOptions = {
     publicKey: publicKey
@@ -49,13 +48,13 @@ const handlePassKeyFinishLogin = async () => {
       const assertionRequest = JSON.stringify({
         authenticatorAttachment: assertion.authenticatorAttachment,
         id: assertion.id,
-        rawId: uint8ArrayToBase64(rawId),
+        rawId: passKeyEncode(rawId),
         type: assertion.type,
         response: {
-          authenticatorData: uint8ArrayToBase64(authenticatorData),
-          clientDataJSON: uint8ArrayToBase64(clientDataJSON),
-          signature: uint8ArrayToBase64(signature),
-          userHandle: uint8ArrayToBase64(userHandle)
+          authenticatorData: passKeyEncode(authenticatorData),
+          clientDataJSON: passKeyEncode(clientDataJSON),
+          signature: passKeyEncode(signature),
+          userHandle: passKeyEncode(userHandle)
         }
       })
       restFull(`/passKeyFinishLogin?session_id=${beginLoginResponse.value.session_id}`, 'POST', assertionRequest)

@@ -47,7 +47,7 @@ const i18n = useI18n()
 const store = useStore()
 const logout = async () => {
   await restFull('logout', 'POST')
-  await store.dispatch('user/logout')
+  await store.dispatch('login/logout')
   ElMessage.success(i18n.t('msg.navBar.logout'))
 }
 </script>

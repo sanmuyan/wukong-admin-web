@@ -38,7 +38,7 @@ service.interceptors.response.use(
       ElMessage.error(message)
       if (code === 1401) {
         if (!whiteList.includes(getUrlPath(window.location.href))) {
-          store.dispatch('user/logout').catch()
+          store.dispatch('login/logout').catch()
           store.dispatch('permission/setBackRoute', getUrlFullPath(window.location.href)).catch()
         }
       }

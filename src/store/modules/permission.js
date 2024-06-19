@@ -30,8 +30,8 @@ export default {
      */
     filterRoutes (context) {
       const routes = []
-      const menus = store.getters.userProfile.menus || []
-      const accessLevel = store.getters.userProfile.access_level || 0
+      const menus = store.getters.accountProfile.menus || []
+      const accessLevel = store.getters.accountProfile.access_level || 0
       if (accessLevel >= 100) {
         // 管理员
         privateRoutes.forEach(route => {

@@ -32,7 +32,7 @@ const formRef = ref(null)
 // 父组件传入的值
 const modelValue = defineModel({ required: true })
 const profileEdit = defineModel('profileEdit', { required: true })
-const refreshUserProfile = inject('refreshUserProfile')
+const refreshAccountProfile = inject('refreshAccountProfile')
 
 const clone = (obj) => {
   return JSON.parse(JSON.stringify(obj))
@@ -60,7 +60,7 @@ const updateProfile = async () => {
   })
     .then(() => {
       ElMessage.success(i18n.t('msg.appMain.updateSuccess'))
-      refreshUserProfile()
+      refreshAccountProfile()
       closed()
     })
 }

@@ -91,6 +91,7 @@ import OauthCallback from './components/OauthCallback'
 import MfaAppLoginDialog from '@/views/mfa/components/MfaAppLoginDialog'
 import PassKeyFinishLoginDialog from '@/views/passkey/components/PassKeyFinishLoginDialog.vue'
 import PassKeyBeginLoginDialog from '@/views/passkey/components/PassKeyBeginLoginDialog.vue'
+import { encryptClientData } from '@/utils/security'
 
 const i18n = useI18n()
 const loginForm = ref({
@@ -137,17 +138,21 @@ const handleLoginData = async (data) => {
     }
     return
   }
-  await store.dispatch('user/login', data.token)
+  await store.dispatch('login/login', data.token)
   ElMessage.success(i18n.t('msg.login.loginSuccess'))
 }
 provide('handleLoginData', handleLoginData)
 
 // 处理账号密码登录
 const handleLogin = async () => {
+  const req = JSON.parse(JSON.stringify(loginForm.value))
+  await encryptClientData(req.password).then(res => {
+    req.password = res
+  })
   loginFormRef.value.validate(valid => {
     if (!valid) return
     loading.value = true
-    restFull('/login', 'POST', loginForm.value)
+    restFull('/login', 'POST', req)
       .then(async data => {
         await handleLoginData(data)
       })
@@ -233,9 +238,9 @@ const handleCallback = () => {
     }
   }
   if (newHref) {
-    store.dispatch('user/newLoginCallback', newHref)
+    store.dispatch('login/newLoginCallback', newHref)
   } else {
-    store.dispatch('user/removeLoginCallback')
+    store.dispatch('login/removeLoginCallback')
   }
 }
 

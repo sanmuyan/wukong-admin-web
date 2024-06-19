@@ -1,18 +1,27 @@
 <template>
-  <el-dialog v-model="modelValue" width="350px" draggable title="注册通行密钥" @close="closed">
-    创建通行密钥后，可通过通行密钥进行登录
+  <el-dialog
+    v-model="modelValue"
+    width="350px"
+    draggable
+    title="注册通行密钥"
+    :show-close="false"
+    :close-on-click-modal="false"
+    @close="closed">
+    <div>创建通行密钥后，可通过通行密钥进行登录</div>
+    <div v-if="disableButton" style="margin-top: 5px">正在注册通行密钥...</div>
     <template #footer>
-      <el-button type="primary" size="small" @click="handleButtonCancel">取消</el-button>
-      <el-button type="primary" size="small" @click="handleButtonSubmit">提交</el-button>
+      <el-button type="primary" size="small" @click="handleButtonCancel" :disabled="disableButton">取消</el-button>
+      <el-button type="primary" size="small" @click="handleButtonSubmit" :disabled="disableButton">提交</el-button>
     </template>
   </el-dialog>
 </template>
 
 <script setup>
-import { defineModel } from 'vue'
+import { defineModel, ref } from 'vue'
 import { restFull } from '@/api'
-import { base64ToUint8Array, uint8ArrayToBase64 } from '@/utils/encode'
+import { passKeyDecode, passKeyEncode } from '@/utils/encode'
 import { ElMessage } from 'element-plus'
+const disableButton = ref(false)
 
 // 父组件传入的值
 const modelValue = defineModel({ required: true })
@@ -22,20 +31,23 @@ const handleRegisterPassKey = async () => {
     .then(async (res) => {
       const publicKey = res.options.publicKey
       const sessionId = res.session_id
-      publicKey.challenge = base64ToUint8Array(publicKey.challenge)
-      publicKey.user.id = base64ToUint8Array(publicKey.user.id)
+      publicKey.challenge = passKeyDecode(publicKey.challenge)
+      publicKey.user.id = passKeyDecode(publicKey.user.id)
       await navigator.credentials.create({ publicKey })
         .then(async credential => {
+          if (!modelValue.value) {
+            return
+          }
           const rawId = credential.rawId
           const attestationObject = credential.response.attestationObject
           const clientDataJSON = credential.response.clientDataJSON
           const attestationResponse = JSON.stringify({
             id: credential.id,
-            rawId: uint8ArrayToBase64(rawId),
+            rawId: passKeyEncode(rawId),
             type: credential.type,
             response: {
-              attestationObject: uint8ArrayToBase64(attestationObject),
-              clientDataJSON: uint8ArrayToBase64(clientDataJSON)
+              attestationObject: passKeyEncode(attestationObject),
+              clientDataJSON: passKeyEncode(clientDataJSON)
             }
           })
           await restFull(`/account/passKeyFinishRegistration?session_id=${sessionId}`, 'POST', attestationResponse)
@@ -44,15 +56,16 @@ const handleRegisterPassKey = async () => {
             })
         })
         .catch(err => {
-          ElMessage.error('注册失败')
+          ElMessage.error('操作已取消')
           console.log(err)
         })
     })
+  closed()
 }
 
 const handleButtonSubmit = () => {
   handleRegisterPassKey()
-  closed()
+  disableButton.value = true
 }
 
 const handleButtonCancel = () => {
@@ -61,6 +74,7 @@ const handleButtonCancel = () => {
 
 const closed = () => {
   modelValue.value = false
+  disableButton.value = false
 }
 
 </script>

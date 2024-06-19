@@ -10,8 +10,8 @@ router.beforeEach(async (to, from, next) => {
       next('/')
     } else {
       // 判断用户信息是否存在，不存在则获取用户信息
-      if (!store.getters.hasUserProfile) {
-        await store.dispatch('user/userProfile')
+      if (!store.getters.hasAccountProfile) {
+        await store.dispatch('login/accountProfile')
         // 添加用户个人路由
         personalRoutes.forEach(item => {
           router.addRoute(item)

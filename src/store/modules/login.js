@@ -9,7 +9,7 @@ export default {
   namespaced: true,
   state: () => ({
     token: getItem(TOKEN_KEY) || '',
-    userProfile: {},
+    accountProfile: {},
     loginCallback: getItem(LOGIN_CALLBACK) || ''
   }),
   mutations: {
@@ -18,8 +18,8 @@ export default {
       setItem(TOKEN_KEY, token)
       setCookie('Authorization', `Bearer ${token}`, 30)
     },
-    setUserProfile (state, userProfile) {
-      state.userProfile = userProfile
+    setAccountProfile (state, accountProfile) {
+      state.accountProfile = accountProfile
     },
     setLoginCallback (state, loginCallback) {
       state.loginCallback = loginCallback
@@ -32,7 +32,7 @@ export default {
       const newHref = store.getters.loginCallback
       if (newHref) {
         window.location.replace(newHref)
-        await store.dispatch('user/removeLoginCallback')
+        await store.dispatch('login/removeLoginCallback')
       } else {
         const route = store.getters.backRoute || '/'
         await router.push(route)
@@ -47,13 +47,13 @@ export default {
       context.commit('setLoginCallback', '')
       removeItem(LOGIN_CALLBACK)
     },
-    async userProfile (context) {
+    async accountProfile (context) {
       const res = await restFull('/account/profile', 'GET')
-      context.commit('setUserProfile', res)
+      context.commit('setAccountProfile', res)
     },
     async logout (context) {
       context.commit('setToken', '')
-      context.commit('setUserProfile', {})
+      context.commit('setAccountProfile', {})
       removeItemAllItem()
       setCookie('Authorization', '', -1)
       router.push('/login').then()
