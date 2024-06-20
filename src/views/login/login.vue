@@ -149,17 +149,17 @@ const handleLogin = async () => {
   await encryptClientData(req.password).then(res => {
     req.password = res
   })
-  loginFormRef.value.validate(valid => {
+  await loginFormRef.value.validate(async valid => {
     if (!valid) return
     loading.value = true
-    restFull('/login', 'POST', req)
+    await restFull('/login', 'POST', req)
       .then(async data => {
         await handleLoginData(data)
       })
-      .catch(() => {
-        loading.value = false
-      })
+      .catch(() => {})
   })
+  loading.value = false
+  loginForm.value.password = ''
 }
 
 // 处理第三方登录

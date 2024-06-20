@@ -3,20 +3,19 @@ import { getItem, removeItem, removeItemAllItem, setItem } from '@/utils/storage
 import { LOGIN_CALLBACK, TOKEN_KEY } from '@/constant'
 import router from '@/router'
 import store from '@/store'
-import { setCookie } from '@/utils/cookie'
+import { getCookie, setCookie } from '@/utils/cookie'
 
 export default {
   namespaced: true,
   state: () => ({
-    token: getItem(TOKEN_KEY) || '',
+    token: getCookie(TOKEN_KEY) || '',
     accountProfile: {},
     loginCallback: getItem(LOGIN_CALLBACK) || ''
   }),
   mutations: {
     setToken (state, token) {
       state.token = token
-      setItem(TOKEN_KEY, token)
-      setCookie('Authorization', `Bearer ${token}`, 30)
+      setCookie(TOKEN_KEY, `Bearer ${token}`, 365)
     },
     setAccountProfile (state, accountProfile) {
       state.accountProfile = accountProfile
