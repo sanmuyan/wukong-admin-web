@@ -71,6 +71,10 @@ const getMfaAppStatus = async () => {
 provide('getMfaAppStatus', getMfaAppStatus)
 getMfaAppStatus()
 
+const getBeginMfaAppBindResponse = async () => {
+  return restFull('/account/mfaAppBeginBind', 'GET')
+}
+provide('getBeginMfaAppBindResponse', getBeginMfaAppBindResponse)
 const handleCreateMfaAppBind = () => {
   showMfaAppBindDialog.value = true
 }

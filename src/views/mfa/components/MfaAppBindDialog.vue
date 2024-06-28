@@ -46,6 +46,7 @@ import { validateNumber } from '@/utils/rules'
 // 父组件传入的值
 const modelValue = defineModel({ required: true })
 const getMfaAppStatus = inject('getMfaAppStatus')
+const getBeginMfaAppBindResponse = inject('getBeginMfaAppBindResponse')
 const mfaAppImageURL = ref('')
 
 const formRef = ref(null)
@@ -77,8 +78,8 @@ const mfaBindReq = ref({
 })
 
 const beginMfaAppBind = async () => {
-  await restFull('/account/mfaAppBeginBind', 'GET')
-    .then(async (res) => {
+  getBeginMfaAppBindResponse()
+    .then(async res => {
       mfaBindReq.value.totp_secret = res.totp_secret
       mfaBindReq.value.session_id = res.session_id
       mfaAppImageURL.value = await generateQrCode(res.qr_code_uri)

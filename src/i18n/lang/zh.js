@@ -21,7 +21,9 @@ export default {
     roleManage: '用户角色',
     resourceManage: '权限资源',
     app: '应用管理',
-    oauthManage: 'OAuth 应用'
+    oauthManage: 'OAuth 应用',
+    settings: '系统设置',
+    settingsManage: '系统设置'
   },
   tagsView: {
     refresh: '刷新',
@@ -37,6 +39,7 @@ export default {
     switchLangSuccess: '切换语言成功'
   },
   appMain: {
+    success: '成功',
     updateSuccess: '更新成功',
     createSuccess: '创建成功',
     isRequired: '必填项'

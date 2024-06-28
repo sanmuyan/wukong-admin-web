@@ -75,6 +75,11 @@
     :username="loginForm.username"
   >
   </pass-key-begin-login-dialog>
+  <mfa-app-bind-dialog
+    v-model:model-value="showMfaAppBindDialog"
+  >
+
+  </mfa-app-bind-dialog>
 </template>
 
 <script setup>
@@ -92,6 +97,7 @@ import MfaAppLoginDialog from '@/views/mfa/components/MfaAppLoginDialog'
 import PassKeyFinishLoginDialog from '@/views/passkey/components/PassKeyFinishLoginDialog.vue'
 import PassKeyBeginLoginDialog from '@/views/passkey/components/PassKeyBeginLoginDialog.vue'
 import { encryptClientData } from '@/utils/security'
+import MfaAppBindDialog from '@/views/mfa/components/MfaAppBindDialog.vue'
 
 const i18n = useI18n()
 const loginForm = ref({
@@ -121,6 +127,12 @@ const loginFormRef = ref(null)
 const showMfaAppLoginDialog = ref(false)
 
 const handleLoginData = async (data) => {
+  // 判断是否需要二次认证
+  if (data.require_mfa) {
+    beginMfaAppBindResponse.value = data.require_mfa
+    handleMfaAppBind()
+    return
+  }
   // 判断是否需要 PassKey
   if (data.pass_key_begin_login) {
     handlePassKeyFinishLogin(data.pass_key_begin_login)
@@ -168,6 +180,22 @@ const handleOauthLogin = async (provider) => {
     .then(data => {
       window.location.replace(data.auth_url)
     })
+}
+
+// 处理绑定 MFA
+const showMfaAppBindDialog = ref(false)
+const beginMfaAppBindResponse = ref({})
+const getBeginMfaAppBindResponse = async () => {
+  return beginMfaAppBindResponse.value
+}
+provide('getBeginMfaAppBindResponse', getBeginMfaAppBindResponse)
+const getMfaAppStatus = () => {
+  ElMessage.success('绑定成功请重新登录')
+}
+provide('getMfaAppStatus', getMfaAppStatus)
+const handleMfaAppBind = () => {
+  ElMessage.success('必须绑定 MFA')
+  showMfaAppBindDialog.value = true
 }
 
 // 处理二次认证登录

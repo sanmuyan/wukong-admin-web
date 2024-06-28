@@ -1,5 +1,5 @@
 <template>
-  <el-sub-menu v-if="route.children.length > 0" :index="route.path">
+  <el-sub-menu v-if="route.children.length > 0 && !route.meta.singlePage" :index="route.path">
     <template #title>
       <menu-item :title="route.meta.title" :icon="route.meta.icon"></menu-item>
     </template>
