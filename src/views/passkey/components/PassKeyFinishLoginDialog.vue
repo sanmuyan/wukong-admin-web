@@ -58,8 +58,8 @@ const handlePassKeyFinishLogin = async () => {
         }
       })
       restFull(`/passKeyFinishLogin?session_id=${beginLoginResponse.value.session_id}`, 'POST', assertionRequest)
-        .then((data) => {
-          handleLoginData(data)
+        .then(res => {
+          handleLoginData(res.data)
         })
     })
     .catch(err => {

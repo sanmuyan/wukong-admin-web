@@ -44,7 +44,7 @@ const passKeys = ref([])
 const getPassKeys = async () => {
   await restFull('/account/passKey', 'GET')
     .then(res => {
-      passKeys.value = res.pass_keys
+      passKeys.value = res.data.pass_keys
       passKeys.value.forEach(item => {
         item.created_at = new Date(item.created_at).toLocaleString()
         item.last_used_at = new Date(item.last_used_at).toLocaleString()

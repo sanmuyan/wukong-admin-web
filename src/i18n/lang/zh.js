@@ -1,6 +1,8 @@
+import { APP_NAME_LOGO } from '@/constant'
+
 export default {
   login: {
-    title: '运维系统登录',
+    title: APP_NAME_LOGO + ' 登录',
     loginBtn: '登录系统',
     usernameRule: '用户名为必填项',
     passwordRule: '密码不能少于8位',
@@ -35,7 +37,7 @@ export default {
     home: '首页',
     logout: '退出登录',
     logoutSuccess: '退出成功',
-    logoTitle: '运维系统',
+    logoTitle: APP_NAME_LOGO,
     switchLangSuccess: '切换语言成功'
   },
   appMain: {

@@ -1,5 +1,7 @@
 <template>
-  <svg-icon :icon="icon"></svg-icon>
+  <div>
+    <svg-icon :icon="icon"></svg-icon>
+  </div>
   <span>{{ generateTitle(title) }}</span>
 </template>
 

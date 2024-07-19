@@ -47,7 +47,7 @@ const formRules = ref({
 const handlePassKeyBeginLogin = async () => {
   await restFull('/passKeyBeginLogin', 'POST', passKeyBeginLoginRequest.value)
     .then(res => {
-      handlePassKeyFinishLogin(res)
+      handlePassKeyFinishLogin(res.data)
     })
   closed()
 }

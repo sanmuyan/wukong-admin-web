@@ -28,19 +28,23 @@
     </el-form>
     <div style="text-align: right">
       <el-button type="primary" size="small" @click="handleConnTest">测试连接</el-button>
+      <el-button type="primary" size="small" @click="handleLoginTest">测试登录</el-button>
       <el-button type="primary" size="small" @click="handleSyncUser">同步用户</el-button>
+      <el-button type="primary" size="small" @click="handleResetSubmit">重置</el-button>
       <el-button type="primary" size="small" @click="handleButtonSubmit">应用</el-button>
     </div>
   </el-card>
+  <ldap-login-test-dialog v-model="showLoginTestDialog"/>
 </template>
 
 <script setup>
 
 import { defineModel, ref, watch } from 'vue'
 import { restFull } from '@/api'
-import { cloneObj, fillObjValue, resetObjValue } from '@/utils/utils'
+import { cloneObj, fillObjValue } from '@/utils/utils'
 import { useI18n } from 'vue-i18n'
 import { ElMessage } from 'element-plus'
+import LdapLoginTestDialog from '@/views/settings/components/LdapLoginTestDialog.vue'
 
 const i18n = useI18n()
 
@@ -57,7 +61,7 @@ const configTemplate = ref({
   admin_dn: '',
   admin_password: ''
 })
-
+const resetConfig = ref({})
 const config = ref({})
 const formRef = ref(null)
 const formRules = {
@@ -99,20 +103,21 @@ const formRules = {
 }
 
 const getSettings = async () => {
-  resetObjValue(config.value)
   restFull('/settings/ldap', 'GET').then(res => {
     config.value = cloneObj(configTemplate.value)
-    fillObjValue(res, config.value)
+    fillObjValue(res.data, config.value)
     config.value.attribute_map = JSON.stringify(config.value.attribute_map)
+    resetConfig.value = cloneObj(config.value)
   })
 }
 
 const updateSettings = async () => {
   config.value.attribute_map = JSON.parse(config.value.attribute_map)
-  restFull('/settings/ldap', 'POST', config.value).then(res => {
-    getSettings()
-    ElMessage.success(i18n.t('msg.appMain.updateSuccess'))
-  })
+  restFull('/settings/ldap', 'POST', config.value)
+    .then(() => {
+      getSettings()
+      ElMessage.success(i18n.t('msg.appMain.updateSuccess'))
+    })
 }
 
 const handleButtonSubmit = () => {
@@ -135,17 +140,28 @@ watch(
 getSettings()
 
 const handleSyncUser = () => {
-  restFull('/ldap/user/sync', 'POST').then(res => {
-    ElMessage.success(i18n.t('msg.appMain.updateSuccess'))
-  })
+  restFull('/ldap/user/sync', 'POST')
+    .then(res => {
+      ElMessage.success(res.message)
+    })
 }
 
 const handleConnTest = () => {
   const req = cloneObj(config.value)
   req.attribute_map = JSON.parse(req.attribute_map)
-  restFull('/ldap/connTest', 'POST', req).then(res => {
-    ElMessage.success(i18n.t('msg.appMain.success'))
-  })
+  restFull('/ldap/connTest', 'POST', req)
+    .then(() => {
+      ElMessage.success(i18n.t('msg.appMain.success'))
+    })
+}
+
+const handleResetSubmit = () => {
+  config.value = cloneObj(resetConfig.value)
+}
+
+const showLoginTestDialog = ref(false)
+const handleLoginTest = () => {
+  showLoginTestDialog.value = true
 }
 
 </script>

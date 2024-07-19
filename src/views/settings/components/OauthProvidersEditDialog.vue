@@ -1,12 +1,21 @@
 <template>
 <el-form>
   <el-dialog
-    :title="title"
+    :title="editTitle"
+    width="650px"
     v-model="modelValue"
     @close="handleButtonCancel">
     <el-form :model="config" :rules="formRules" ref="formRef" label-width="100px">
-      <el-form-item label="名称" prop="provider">
-        <el-input v-model="config.provider"></el-input>
+      <el-form-item label="开启登录" prop="enable">
+        <el-switch
+          v-model="config.enable"
+          inline-prompt
+          active-text="是"
+          inactive-text="否"
+        />
+      </el-form-item>
+      <el-form-item v-if="editType === 'wecom'" label="企业 ID" prop="corp_id">
+        <el-input v-model="config.corp_id"></el-input>
       </el-form-item>
       <el-form-item label="客户端 ID" prop="client_id">
         <el-input v-model="config.client_id"></el-input>
@@ -40,18 +49,20 @@
 
 <script setup>
 import { defineModel, inject, ref, watch } from 'vue'
+import { cloneObj } from '@/utils/utils'
 
 // 父组件传入的值
 const modelValue = defineModel({ required: true })
-const configEdit = defineModel('config', { required: true })
-const title = defineModel('title', { required: true })
+const editConfig = defineModel('config', { required: true })
+const editTitle = defineModel('editTitle', { required: true })
+const editType = defineModel('editType', { required: true })
 const handleUpdateProvider = inject('handleUpdateProvider')
 
 const config = ref({})
 
 const formRef = ref(null)
 const formRules = {
-  provider: [
+  app_id: [
     {
       required: true,
       trigger: 'blur',
@@ -67,7 +78,7 @@ const formRules = {
   ],
   client_secret: [
     {
-      required: false,
+      required: true,
       trigger: 'blur',
       message: '必填项'
     }
@@ -95,7 +106,7 @@ const formRules = {
   ],
   scopes: [
     {
-      required: true,
+      required: false,
       trigger: 'blur',
       message: '必填项'
     }
@@ -109,16 +120,11 @@ const formRules = {
   ]
 }
 
-const clone = (obj) => {
-  return JSON.parse(JSON.stringify(obj))
-}
-
 watch(
   () => modelValue.value,
   val => {
-    if (val && title.value === '编辑') {
-      config.value = clone(configEdit.value)
-    }
+    if (val) config.value = cloneObj(editConfig.value)
+    if (formRef.value) formRef.value.clearValidate()
   }
 )
 
@@ -137,8 +143,8 @@ const handleButtonSubmit = () => {
 
 const handleButtonCancel = () => {
   config.value = {}
+  editConfig.value = {}
   modelValue.value = false
-  formRef.value.clearValidate()
 }
 
 </script>

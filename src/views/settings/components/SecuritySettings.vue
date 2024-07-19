@@ -33,6 +33,7 @@
       </el-form-item>
     </el-form>
     <div style="text-align: right">
+      <el-button type="primary" size="small" @click="handleResetSubmit">重置</el-button>
       <el-button type="primary" size="small" @click="handleButtonSubmit">应用</el-button>
     </div>
   </el-card>
@@ -42,7 +43,7 @@
 
 import { defineModel, ref, watch } from 'vue'
 import { restFull } from '@/api'
-import { cloneObj, fillObjValue, resetObjValue } from '@/utils/utils'
+import { cloneObj, fillObjValue } from '@/utils/utils'
 import { ElMessage } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 
@@ -62,6 +63,7 @@ const configTemplate = ref({
   require_mfa: false
 })
 
+const resetConfig = ref({})
 const config = ref({})
 const formRef = ref(null)
 const formRules = {
@@ -103,11 +105,12 @@ const formRules = {
 }
 
 const getSettings = async () => {
-  resetObjValue(config.value)
-  restFull('/settings/security', 'GET').then(res => {
-    config.value = cloneObj(configTemplate.value)
-    fillObjValue(res, config.value)
-  })
+  restFull('/settings/security', 'GET')
+    .then(res => {
+      config.value = cloneObj(configTemplate.value)
+      fillObjValue(res.data, config.value)
+      resetConfig.value = cloneObj(config.value)
+    })
 }
 
 const updateSettings = async () => {
@@ -116,10 +119,11 @@ const updateSettings = async () => {
   config.value.login_lock_time = parseInt(config.value.login_lock_time)
   config.value.password_min_length = parseInt(config.value.password_min_length)
   config.value.password_complexity = parseInt(config.value.password_complexity)
-  restFull('/settings/security', 'POST', config.value).then(res => {
-    ElMessage.success(i18n.t('msg.appMain.updateSuccess'))
-    getSettings()
-  })
+  restFull('/settings/security', 'POST', config.value)
+    .then(() => {
+      ElMessage.success(i18n.t('msg.appMain.updateSuccess'))
+      getSettings()
+    })
 }
 
 const handleButtonSubmit = () => {
@@ -140,6 +144,10 @@ watch(
 )
 
 getSettings()
+
+const handleResetSubmit = () => {
+  config.value = cloneObj(resetConfig.value)
+}
 
 </script>
 

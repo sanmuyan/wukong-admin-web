@@ -86,15 +86,16 @@ const userQueryData = ref('')
 const loading = ref(false)
 const getUsers = async () => {
   loading.value = true
-  const res = await restFull('/user', 'GET', {
+  await restFull('/user', 'GET', {
     page_number: pageNumber.value,
     page_size: pageSize.value,
     query: userQueryData.value
+  }).then(res => {
+    userList.value = res.data.users
+    pageNumber.value = res.data.page_number
+    pageSize.value = res.data.page_size
+    totalCount.value = res.data.total_count
   })
-  userList.value = res.users
-  pageNumber.value = res.page_number
-  pageSize.value = res.page_size
-  totalCount.value = res.total_count
   loading.value = false
 }
 provide('getUsers', getUsers)

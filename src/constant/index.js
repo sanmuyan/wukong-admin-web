@@ -1,6 +1,9 @@
 export const TOKEN_KEY = 'Authorization'
 export const LANG = 'language'
 export const TAGS_VIEW = 'tagsView'
-export const LOGIN_CALLBACK = 'loginCallback'
+export const CALLBACK_LOGIN_DATA = 'callbackLoginData'
+export const CALLBACK_LOGIN_BIND_DATA = 'callbackLoginBindData'
 export const APP_NAME = 'wukong'
 export const CLIENT_ENCRYPT_PUBLIC_KEY = 'clientEncryptPublicKey'
+export const APP_NAME_LOGO = APP_NAME.toUpperCase()
+export const REMEMBER_LOGIN = 'rememberLogin'

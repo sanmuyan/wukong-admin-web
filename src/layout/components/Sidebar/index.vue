@@ -1,12 +1,12 @@
 <template>
   <div class="">
     <div class="logo-container">
-      <el-avatar
-        :size='logoHeight'
-        shape="square"
+      <el-icon
+        :size='28'
+        color="#fff"
       >
-        <svg-icon icon="logo"/>
-      </el-avatar>
+        <svg-icon style="width: 100%; height: 100%; margin-right: 0" icon="logo"/>
+      </el-icon>
       <h1 class="logo-title" v-if="$store.getters.sidebarOpened">
         {{$t('msg.navBar.logoTitle')}}
       </h1>
@@ -19,42 +19,20 @@
 
 <script setup>
 import SidebarMenu from './SidebarMenu'
-import { useStore } from 'vuex'
-import { watch, reactive } from 'vue'
-
-const logoHeight = 44
-const store = useStore()
-
-const css = reactive({
-  justifyContent: 'center'
-})
-
-watch(() => store.getters.sidebarOpened, (currentValue, preValue) => {
-  if (currentValue === true) {
-    css.justifyContent = 'center'
-  } else {
-    css.justifyContent = 'flex-end'
-  }
-})
 
 </script>
 
 <style lang="scss" scoped>
 
 .logo-container {
-  height: v-bind(logoHeight) + 'px';
-  padding: 10px 0 22px 0;
+  background: #233545;
+  height: 40px;
+  padding: 10px 0 10px 0;
   display: flex;
   align-items: center;
-  justify-content: v-bind('css.justifyContent');
-
-  .svg-icon {
-    width: 5em;
-    height: 5em;
-  }
-
+  justify-content: center;
   .logo-title {
-    margin-left: 6px;
+    margin-left: 5px;
     color: #fff;
     font-weight: 600;
     line-height: 50px;

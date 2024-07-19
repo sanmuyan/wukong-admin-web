@@ -19,6 +19,9 @@ export default {
     },
     setBackRoute (state, route) {
       state.backRoute = route
+    },
+    removeBackRoute (state) {
+      state.backRoute = ''
     }
   },
   actions: {

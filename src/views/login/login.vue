@@ -1,5 +1,5 @@
 <template>
-  <div class="login-container" v-if="showLogin">
+  <div class="login-container" v-if="showLoginView">
     <el-form
       v-loading="loading"
       class="login-form"
@@ -35,34 +35,28 @@
           :prefix-icon="Unlock"
         >
         </el-input>
+        <el-checkbox @change="rememberLoginChange" v-model="rememberLogin" label="保持登录" size="large" />
       </el-form-item>
       <el-button type="primary" style="width: 100%; margin-bottom: 30px" @click="handleLogin">
         {{ $t('msg.login.loginBtn') }}
       </el-button>
       <div class="tips" v-html="$t('msg.login.desc')"></div>
       <div class="other-login-container">
-        <span class="other-login-container-text">{{ $t('msg.login.otherLogin') }}</span>
-        <el-button
-          type="info"
-          size="small"
-          round
-          @click="handleOauthLogin('gitlab')"
-        >
-          GitLab
-        </el-button>
-        <el-button
-          type="info"
-          size="small"
-          round
-          @click="handlePassKeyBeginLogin()"
-        >
-          通行密钥
-        </el-button>
+        <div class="other-login-container-text">{{ $t('msg.login.otherLogin') }}</div>
+        <div class="other-login-item-container">
+          <el-tooltip
+            v-for="item in otherLoginList"
+            :key="item"
+            :content="item.title"
+          >
+            <el-icon @click="item.click(item.name)" :size="otherLoginIconSize">
+              <svg-icon :icon="item.icon"/>
+            </el-icon>
+          </el-tooltip>
+        </div>
       </div>
     </el-form>
   </div>
-  <oauth-callback v-if="showOauthCallbackLogin">
-  </oauth-callback>
   <mfa-app-login-dialog
     v-model="showMfaAppLoginDialog">
   </mfa-app-login-dialog>
@@ -91,13 +85,13 @@ import { Unlock, UserFilled } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { restFull } from '@/api'
 import { useI18n } from 'vue-i18n'
-import { urlToParamsObj } from '@/utils/url'
-import OauthCallback from './components/OauthCallback'
 import MfaAppLoginDialog from '@/views/mfa/components/MfaAppLoginDialog'
 import PassKeyFinishLoginDialog from '@/views/passkey/components/PassKeyFinishLoginDialog.vue'
 import PassKeyBeginLoginDialog from '@/views/passkey/components/PassKeyBeginLoginDialog.vue'
 import { encryptClientData } from '@/utils/security'
 import MfaAppBindDialog from '@/views/mfa/components/MfaAppBindDialog.vue'
+import { CALLBACK_LOGIN_DATA } from '@/constant'
+import { getLocalItem, removeLocalItem } from '@/utils/storage'
 
 const i18n = useI18n()
 const loginForm = ref({
@@ -165,8 +159,8 @@ const handleLogin = async () => {
     if (!valid) return
     loading.value = true
     await restFull('/login', 'POST', req)
-      .then(async data => {
-        await handleLoginData(data)
+      .then(async res => {
+        await handleLoginData(res.data)
       })
       .catch(() => {})
   })
@@ -175,10 +169,20 @@ const handleLogin = async () => {
 }
 
 // 处理第三方登录
+
 const handleOauthLogin = async (provider) => {
-  restFull('/oauth/login', 'GET', { provider: provider })
-    .then(data => {
-      window.location.replace(data.auth_url)
+  await restFull('/oauth/login', 'GET', { provider: provider })
+    .then(res => {
+      const loginWin = window.open(res.data.auth_url, '_blank', 'width=800,height=600,left=100,top=100')
+      const si = setInterval(() => {
+        if (loginWin.closed) {
+          if (getLocalItem(CALLBACK_LOGIN_DATA)) {
+            handleLoginData(getLocalItem(CALLBACK_LOGIN_DATA))
+            removeLocalItem(CALLBACK_LOGIN_DATA)
+          }
+          clearInterval(si)
+        }
+      }, 100)
     })
 }
 
@@ -190,11 +194,11 @@ const getBeginMfaAppBindResponse = async () => {
 }
 provide('getBeginMfaAppBindResponse', getBeginMfaAppBindResponse)
 const getMfaAppStatus = () => {
-  ElMessage.success('绑定成功请重新登录')
+  ElMessage.success('请重新登录')
 }
 provide('getMfaAppStatus', getMfaAppStatus)
 const handleMfaAppBind = () => {
-  ElMessage.success('必须绑定 MFA')
+  ElMessage.success('请绑定 MFA')
   showMfaAppBindDialog.value = true
 }
 
@@ -207,8 +211,8 @@ const handleMfaFinishLogin = async (mfaCode) => {
   }
   mfaLoginRequest.value.code = mfaCode
   await restFull('/mfaFinishLogin', 'POST', mfaLoginRequest.value)
-    .then(async data => {
-      await handleLoginData(data)
+    .then(async res => {
+      await handleLoginData(res.data)
     })
   mfaAppLoginDialogClosed()
 }
@@ -248,48 +252,49 @@ const passKeyBeginLoginDialogClosed = () => {
 provide('passKeyBeginLoginDialogClosed', passKeyBeginLoginDialogClosed)
 provide('handlePassKeyFinishLogin', handlePassKeyFinishLogin)
 
-// 处理登录后需要跳转的情况，比如 /login?callback=https://www.baidu.com 登录后会跳转到 https://www.baidu.com
-const handleCallback = () => {
-  let newHref = ''
-  if (window.location.search) {
-    const searchObj = urlToParamsObj(window.location.href)
-    if (searchObj.callback) {
-      for (const k in searchObj) {
-        if (k === 'callback') {
-          newHref = searchObj[k]
-        } else {
-          if (newHref) {
-            newHref += `&${k}=${searchObj[k]}`
-          }
-        }
-      }
-    }
-  }
-  if (newHref) {
-    store.dispatch('login/newLoginCallback', newHref)
-  } else {
-    store.dispatch('login/removeLoginCallback')
-  }
+const showLoginView = ref(true)
+
+if (store.getters.token) {
+  showLoginView.value = false
 }
 
-const showLogin = ref(false)
-const showOauthCallbackLogin = ref(false)
+// 其他登录列表
 
-const handleViewRouter = () => {
-  switch (window.location.pathname) {
-    case '/oauth/callback':
-      showOauthCallbackLogin.value = true
-      break
-    case '/login':
-      showLogin.value = true
-      handleCallback()
-      break
-    default:
-      break
+const otherLoginIconSize = ref(30)
+
+const otherLoginList = ref([
+  {
+    name: 'passkey',
+    title: '通行密钥',
+    icon: 'passkey',
+    click: handlePassKeyBeginLogin
+  },
+  {
+    name: 'wecom',
+    title: '企业微信',
+    icon: 'wecom',
+    click: handleOauthLogin
+  },
+  {
+    name: 'dingtalk',
+    title: '钉钉',
+    icon: 'dingtalk',
+    click: handleOauthLogin
+  },
+  {
+    name: 'gitlab',
+    title: 'GitLab',
+    icon: 'gitlab',
+    click: handleOauthLogin
   }
-}
+])
 
-handleViewRouter()
+// 记住登录状态
+const rememberLogin = ref(store.getters.rememberLogin)
+
+const rememberLoginChange = () => {
+  store.commit('login/setRememberLogin', rememberLogin.value)
+}
 
 </script>
 <style lang="scss" scoped>
@@ -354,10 +359,24 @@ handleViewRouter()
     }
 
     .other-login-container {
+      display: flex;
       .other-login-container-text {
         font-size: 12px;
         color: rgb(155, 158, 160);
         margin-right: 20px;
+        margin-top: 6px;
+      }
+      .other-login-item-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 15px;
+        .svg-icon {
+          width: 100%;
+          height: 100%;
+        }
+        //.el-avatar {
+        //   border: 1px solid #c0c4cc;
+        //}
       }
     }
   }

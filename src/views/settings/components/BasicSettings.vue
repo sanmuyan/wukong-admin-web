@@ -12,6 +12,7 @@
       </el-form-item>
     </el-form>
     <div style="text-align: right">
+      <el-button type="primary" size="small" @click="handleResetSubmit">重置</el-button>
       <el-button type="primary" size="small" @click="handleButtonSubmit">应用</el-button>
     </div>
   </el-card>
@@ -21,7 +22,7 @@
 
 import { defineModel, ref, watch } from 'vue'
 import { restFull } from '@/api'
-import { cloneObj, fillObjValue, resetObjValue } from '@/utils/utils'
+import { cloneObj, fillObjValue } from '@/utils/utils'
 import { ElMessage } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 
@@ -36,6 +37,7 @@ const configTemplate = ref({
   app_name: 'wukong'
 })
 
+const resetConfig = ref({})
 const config = ref({})
 
 const formRef = ref(null)
@@ -64,18 +66,20 @@ const formRules = {
 }
 
 const getSettings = async () => {
-  resetObjValue(config.value)
-  restFull('/settings/basic', 'GET').then(res => {
-    config.value = cloneObj(configTemplate.value)
-    fillObjValue(res, config.value)
-  })
+  restFull('/settings/basic', 'GET')
+    .then(res => {
+      config.value = cloneObj(configTemplate.value)
+      fillObjValue(res.data, config.value)
+      resetConfig.value = cloneObj(config.value)
+    })
 }
 
 const updateSettings = async () => {
-  restFull('/settings/basic', 'POST', config.value).then(res => {
-    ElMessage.success(i18n.t('msg.appMain.updateSuccess'))
-    getSettings()
-  })
+  restFull('/settings/basic', 'POST', config.value)
+    .then(() => {
+      ElMessage.success(i18n.t('msg.appMain.updateSuccess'))
+      getSettings()
+    })
 }
 
 const handleButtonSubmit = () => {
@@ -96,6 +100,10 @@ watch(
 )
 
 getSettings()
+
+const handleResetSubmit = () => {
+  config.value = cloneObj(resetConfig.value)
+}
 
 </script>
 

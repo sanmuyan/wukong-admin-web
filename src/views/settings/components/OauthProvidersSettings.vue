@@ -1,87 +1,123 @@
 <template>
   <el-card style="width: 500px">
-    <el-table :data="configs" style="width: 100%">
-      <el-table-column prop="provider" label="名称"/>
-      <el-table-column label="操作" fixed="right">
-        <template #default="{ row }">
-          <el-switch
-            v-model="row.enable"
-            inline-prompt
-            active-text="开启"
-            inactive-text="关闭"
-            style="margin-right: 10px"
-          />
-          <el-button type="primary" size="small" @click="handleProviderEdit(row)">编辑</el-button>
-          <el-popconfirm @confirm="deleteProvider(row)" title="确定删除吗？">
-            <template #reference>
-              <el-button type="primary" size="small">删除</el-button>
-            </template>
-          </el-popconfirm>
-        </template>
-      </el-table-column>
-    </el-table>
+    <el-form style="width: 100px" label-width="80px">
+      <el-form-item label="GitLab">
+        <el-button type="primary" size="small" @click="handleShowEditDialog('gitlab')">设置</el-button>
+      </el-form-item>
+      <el-form-item label="企业微信">
+        <el-button type="primary" size="small" @click="handleShowEditDialog('wecom')">设置</el-button>
+      </el-form-item>
+      <el-form-item label="钉钉">
+        <el-button type="primary" size="small" @click="handleShowEditDialog('dingtalk')">设置</el-button>
+      </el-form-item>
+    </el-form>
     <div style="text-align: right; margin-top: 10px">
-      <el-button type="primary" size="small" @click="handleProviderAdd">添加</el-button>
+      <el-button type="primary" size="small" @click="handleResetSubmit">重置</el-button>
       <el-button type="primary" size="small" @click="handleButtonSubmit">应用</el-button>
     </div>
   </el-card>
-  <oauth-providers-edit
+  <oauth-providers-edit-dialog
+    :editTitle="editTitle"
+    :editType="editType"
     v-model="showEditDialog"
-    :config="config"
-    :title="editDialogTitle"
-  />
+    :config="editConfig">
+  </oauth-providers-edit-dialog>
 </template>
 
 <script setup>
 
 import { defineModel, provide, ref, watch } from 'vue'
 import { restFull } from '@/api'
-import { resetObjValue } from '@/utils/utils'
+import { cloneObj, fillObjValue } from '@/utils/utils'
 import { ElMessage } from 'element-plus'
 import { useI18n } from 'vue-i18n'
-import OauthProvidersEdit from '@/views/settings/components/OauthProvidersEdit.vue'
+import OauthProvidersEditDialog from '@/views/settings/components/OauthProvidersEditDialog.vue'
 
 const i18n = useI18n()
 
 // 父组件传入的值
 const modelValue = defineModel({ required: true })
 
-const configs = ref([])
-const config = ref({
+const configTemplate = ref({
   enable: false,
+  corp_id: '',
   client_id: '',
   client_secret: '',
   redirect_url: '',
   auth_url: '',
   token_url: '',
-  scopes: [],
-  user_info_url: '',
-  provider: ''
+  scopes: '',
+  user_info_url: ''
 })
 
+const config = ref({
+  gitlab: cloneObj(configTemplate.value),
+  we_com: cloneObj(configTemplate.value),
+  ding_talk: cloneObj(configTemplate.value)
+})
+const resetConfig = ref({})
+const editConfig = ref({})
+
 const getSettings = async () => {
-  configs.value.forEach(item => {
-    resetObjValue(item)
-  })
-  restFull('/settings/oauthProviders', 'GET').then(res => {
-    configs.value = res
-  })
+  restFull('/settings/oauthProviders', 'GET')
+    .then(res => {
+      config.value = res.data
+      resetConfig.value = cloneObj(config.value)
+    })
 }
 
 const updateSettings = async () => {
-  configs.value.forEach(item => {
-    if (typeof item.scopes === 'string') {
-      item.scopes = item.scopes.split(',')
-    }
-  })
-  restFull('/settings/oauthProviders', 'POST', configs.value).then(res => {
-    ElMessage.success(i18n.t('msg.appMain.updateSuccess'))
-    getSettings()
-  })
+  restFull('/settings/oauthProviders', 'POST', config.value)
+    .then(() => {
+      ElMessage.success(i18n.t('msg.appMain.updateSuccess'))
+      getSettings()
+    })
 }
 
 const handleButtonSubmit = () => {
   updateSettings()
+}
+
+const handleUpdateProvider = (providerConfig) => {
+  switch (editType.value) {
+    case 'gitlab':
+      config.value.gitlab = providerConfig
+      break
+    case 'wecom':
+      config.value.we_com = providerConfig
+      break
+    case 'dingtalk':
+      config.value.ding_talk = providerConfig
+      break
+  }
+}
+
+provide('handleUpdateProvider', handleUpdateProvider)
+
+const showEditDialog = ref(false)
+const editTitle = ref('')
+const editType = ref('')
+
+const handleShowEditDialog = (type) => {
+  editType.value = type
+  switch (editType.value) {
+    case 'gitlab':
+      editTitle.value = 'GitLab 设置'
+      editConfig.value = cloneObj(configTemplate.value)
+      if (config.value.gitlab) fillObjValue(config.value.gitlab, editConfig.value)
+      break
+    case 'wecom':
+      editTitle.value = '企业微信设置'
+      editConfig.value = cloneObj(configTemplate.value)
+      if (config.value.we_com) fillObjValue(config.value.we_com, editConfig.value)
+      break
+    case 'dingtalk':
+      editTitle.value = '钉钉设置'
+      editConfig.value = cloneObj(configTemplate.value)
+      if (config.value.ding_talk) fillObjValue(config.value.ding_talk, editConfig.value)
+      break
+  }
+  showEditDialog.value = true
 }
 
 watch(
@@ -94,33 +130,9 @@ watch(
 )
 
 getSettings()
-const showEditDialog = ref(false)
-const editDialogTitle = ref('')
 
-const handleUpdateProvider = (provider) => {
-  const index = configs.value.findIndex(item => item.provider === provider.provider)
-  if (index !== -1) {
-    configs.value[index] = provider
-  } else {
-    configs.value.push(provider)
-  }
-}
-
-provide('handleUpdateProvider', handleUpdateProvider)
-
-const handleProviderEdit = (row) => {
-  editDialogTitle.value = '编辑'
-  showEditDialog.value = true
-  config.value = row
-}
-
-const deleteProvider = (row) => {
-  configs.value = configs.value.filter(item => item.provider !== row.provider)
-}
-
-const handleProviderAdd = () => {
-  editDialogTitle.value = '新增'
-  showEditDialog.value = true
+const handleResetSubmit = () => {
+  config.value = cloneObj(resetConfig.value)
 }
 
 </script>

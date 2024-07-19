@@ -42,6 +42,7 @@ import { restFull } from '@/api'
 import { defineModel, inject, ref, watch } from 'vue'
 import { generateQrCode } from '@/utils/qrcode'
 import { validateNumber } from '@/utils/rules'
+import { ElMessage } from 'element-plus'
 
 // 父组件传入的值
 const modelValue = defineModel({ required: true })
@@ -108,6 +109,7 @@ watch(
 const finishMfaAppBind = async () => {
   await restFull('/account/mfaAppFinishBind', 'POST', mfaBindReq.value)
     .then(() => {
+      ElMessage.success('绑定成功')
       getMfaAppStatus()
       closed()
     })

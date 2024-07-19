@@ -11,10 +11,10 @@
     }"
       :data="userRoleOptionList"
     />
-    <div class="dialog-button">
-      <el-button type="primary" size="small" @click="closed">取消</el-button>
-      <el-button type="primary" size="small" @click="updateUserBind">提交</el-button>
-    </div>
+    <template #footer>
+      <el-button type="primary" size="small" @click="handleButtonCancel">取消</el-button>
+      <el-button type="primary" size="small" @click="handleButtonSubmit">提交</el-button>
+    </template>
   </el-dialog>
 </template>
 
@@ -35,29 +35,46 @@ const userRoleOptionList = ref([])
 const userRoleIdList = ref([])
 const userBindList = ref([])
 
-const getRoles = async () => {
-  const res = await restFull('/role', 'GET')
-  roleList.value = res.roles
+const getRoles = async (parameter) => {
+  if (!parameter) {
+    parameter = {
+      page_number: 1,
+      page_size: 10
+    }
+  }
+  await restFull('/role', 'GET', parameter)
+    .then(async res => {
+      res.data.roles.forEach(item => {
+        roleList.value.push(item)
+      })
+      if (res.data.total_count > (res.data.page_number * res.data.page_size)) {
+        await getRoles({
+          page_number: res.data.page_number + 1,
+          page_size: res.data.page_size
+        })
+      }
+    })
 }
 
 const getUserBinds = async () => {
   await getRoles()
-  const res = await restFull('/userBind', 'GET', {
+  await restFull('/userBind', 'GET', {
     user_id: userId.value
-  })
-  userBindList.value = res.user_binds
-  // 生成默认数据
-  roleList.value.forEach(role => {
-    userRoleOptionList.value.push({
-      value: role.id,
-      label: role.role_name
+  }).then(res => {
+    userBindList.value = res.data.user_binds
+    // 生成默认数据
+    roleList.value.forEach(role => {
+      userRoleOptionList.value.push({
+        value: role.id,
+        label: role.role_name
+      })
+      const userBind = userBindList.value.find(userBind => {
+        return userBind.role_id === role.id
+      })
+      if (userBind) {
+        userRoleIdList.value.push(role.id)
+      }
     })
-    const userBind = userBindList.value.find(userBind => {
-      return userBind.role_id === role.id
-    })
-    if (userBind) {
-      userRoleIdList.value.push(role.id)
-    }
   })
 }
 
@@ -78,9 +95,10 @@ const updateUserBind = () => {
     }
   })
   if (deleteUserBindList.length > 0) {
-    restFull('/userBind', 'DELETE', deleteUserBindList).then(() => {
-      ElMessage.success(i18n.t('msg.appMain.updateSuccess'))
-    })
+    restFull('/userBind', 'DELETE', deleteUserBindList)
+      .then(() => {
+        ElMessage.success(i18n.t('msg.appMain.updateSuccess'))
+      })
   }
   // 创建
   const createUserBindList = []
@@ -97,15 +115,25 @@ const updateUserBind = () => {
     })
   })
   if (createUserBindList.length > 0) {
-    restFull('/userBind', 'POST', createUserBindList).then(() => {
-      ElMessage.success('更新成功')
-    })
+    restFull('/userBind', 'POST', createUserBindList)
+      .then(() => {
+        ElMessage.success('更新成功')
+      })
   }
+  closed()
+}
+
+const handleButtonSubmit = () => {
+  updateUserBind()
+}
+
+const handleButtonCancel = () => {
   closed()
 }
 
 const closed = () => {
   modelValue.value = false
+  roleList.value = []
   userRoleIdList.value = []
   userRoleOptionList.value = []
 }

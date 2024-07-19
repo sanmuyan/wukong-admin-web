@@ -28,9 +28,9 @@ const modelValue = defineModel({ required: true })
 
 const handleRegisterPassKey = async () => {
   await restFull('/account/passKeyBeginRegistration', 'GET')
-    .then(async (res) => {
-      const publicKey = res.options.publicKey
-      const sessionId = res.session_id
+    .then(async res => {
+      const publicKey = res.data.options.publicKey
+      const sessionId = res.data.session_id
       publicKey.challenge = passKeyDecode(publicKey.challenge)
       publicKey.user.id = passKeyDecode(publicKey.user.id)
       await navigator.credentials.create({ publicKey })

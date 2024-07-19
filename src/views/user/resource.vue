@@ -75,15 +75,16 @@ const pageSize = ref(10)
 const totalCount = ref(0)
 const resourceQueryData = ref('')
 const getResources = async () => {
-  const res = await restFull('/resource', 'GET', {
+  await restFull('/resource', 'GET', {
     page_number: pageNumber.value,
     page_size: pageSize.value,
     query: resourceQueryData.value
+  }).then(res => {
+    resourceList.value = res.data.resources
+    pageNumber.value = res.data.page_number
+    pageSize.value = res.data.page_size
+    totalCount.value = res.data.total_count
   })
-  resourceList.value = res.resources
-  pageNumber.value = res.page_number
-  pageSize.value = res.page_size
-  totalCount.value = res.total_count
 }
 provide('getResources', getResources)
 getResources()

@@ -35,12 +35,12 @@ const searchObj = ref({})
 
 const handleOauthAuthorize = async () => {
   await restFull('/oauth/authorize/frontRedirect', 'GET', searchObj.value)
-    .then(data => {
-      if (data.error) {
-        ElMessage.error(data.err)
+    .then(res => {
+      if (res.data.error) {
+        ElMessage.error(res.data.err)
         return
       }
-      window.location.replace(data.redirect_uri)
+      window.location.replace(res.data.redirect_uri)
     })
 }
 

@@ -5,6 +5,6 @@ export const publicRoutes = [
   },
   {
     path: '/oauth/callback',
-    component: () => import('@/views/login/login')
+    component: () => import('@/views/login/components/OauthCallback.vue')
   }
 ]

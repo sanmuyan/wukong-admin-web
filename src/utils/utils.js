@@ -13,3 +13,12 @@ export const fillObjValue = (srcObj = {}, targetObj = {}) => {
     targetObj[key] = srcObj[key]
   })
 }
+
+export const insertAfterKeywords = (val, keywords, insert) => {
+  let s = val
+  const vals = val.split(keywords)
+  if (vals.length === 2) {
+    s = vals[0] + keywords + insert + vals[1]
+  }
+  return s
+}

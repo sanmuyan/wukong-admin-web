@@ -5,24 +5,37 @@
 <script setup>
 import { restFull } from '@/api'
 import { urlToParamsObj } from '@/utils/url'
-import router from '@/router'
-import { inject } from 'vue'
-const handleLoginData = inject('handleLoginData')
+import { CALLBACK_LOGIN_BIND_DATA, CALLBACK_LOGIN_DATA } from '@/constant'
+import { setLocalItem } from '@/utils/storage'
 
-const handleOauthCallback = async () => {
-  await restFull('/oauth/callback', 'GET',
-    urlToParamsObj(window.location.href))
-    .then(async data => {
-      await handleLoginData(data)
+const handleOauthCallback = async (params) => {
+  await restFull('/oauth/callback', 'GET', params)
+    .then(async res => {
+      setLocalItem(CALLBACK_LOGIN_DATA, res.data)
+      window.close()
     })
-    .catch(
-      () => {
-        router.push('/login')
-      }
-    )
 }
 
-handleOauthCallback()
+const handleOauthBindCallback = async (params) => {
+  await restFull('/account/oauthBindCallback', 'GET', params)
+    .then(() => {
+      setLocalItem(CALLBACK_LOGIN_BIND_DATA, 'yes')
+    })
+  window.close()
+}
+
+const handleViewRouter = () => {
+  const params = urlToParamsObj(window.location.href)
+  if (params.state.includes('bind_')) {
+    // 如果 state 参数中有 bind_ 关键字 说明是绑定回调
+    params.state = params.state.replace('bind_', '')
+    handleOauthBindCallback(params)
+    return
+  }
+  handleOauthCallback(params)
+}
+
+handleViewRouter()
 
 </script>
 

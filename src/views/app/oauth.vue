@@ -110,27 +110,29 @@ const totalCount = ref(0)
 const oauthAppQueryData = ref('')
 
 const getOauthApps = async () => {
-  const res = await restFull('/app/oauth', 'GET', {
+  await restFull('/app/oauth', 'GET', {
     page_number: pageNumber.value,
     page_size: pageSize.value,
     query: oauthAppQueryData.value
   })
-  if (res.oauth_apps) {
-    oauthAppList.value = res.oauth_apps
-    oauthAppList.value.forEach(oauthApp => {
-      if (oauthApp.redirect_uri) {
-        oauthApp.redirect_uri = oauthApp.redirect_uri.replace(/,/g, '\n')
-        oauthApp.redirect_uri_list = oauthApp.redirect_uri.split('\n')
+    .then(res => {
+      if (res.data.oauth_apps) {
+        oauthAppList.value = res.data.oauth_apps
+        oauthAppList.value.forEach(oauthApp => {
+          if (oauthApp.redirect_uri) {
+            oauthApp.redirect_uri = oauthApp.redirect_uri.replace(/,/g, '\n')
+            oauthApp.redirect_uri_list = oauthApp.redirect_uri.split('\n')
+          }
+          if (oauthApp.scope) {
+            oauthApp.scope = oauthApp.scope.replace(/,/g, '\n')
+            oauthApp.scope_list = oauthApp.scope.split('\n')
+          }
+        })
       }
-      if (oauthApp.scope) {
-        oauthApp.scope = oauthApp.scope.replace(/,/g, '\n')
-        oauthApp.scope_list = oauthApp.scope.split('\n')
-      }
+      pageNumber.value = res.data.page_number
+      pageSize.value = res.data.page_size
+      totalCount.value = res.data.total_count
     })
-  }
-  pageNumber.value = res.page_number
-  pageSize.value = res.page_size
-  totalCount.value = res.total_count
 }
 provide('getOauthApps', getOauthApps)
 getOauthApps()

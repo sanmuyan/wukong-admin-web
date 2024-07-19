@@ -73,15 +73,16 @@ const pageSize = ref(10)
 const totalCount = ref(0)
 const roleQueryData = ref('')
 const getRoles = async () => {
-  const res = await restFull('/role', 'GET', {
+  await restFull('/role', 'GET', {
     page_number: pageNumber.value,
     page_size: pageSize.value,
     query: roleQueryData.value
+  }).then(res => {
+    roleList.value = res.data.roles
+    pageNumber.value = res.data.page_number
+    pageSize.value = res.data.page_size
+    totalCount.value = res.data.total_count
   })
-  roleList.value = res.roles
-  pageNumber.value = res.page_number
-  pageSize.value = res.page_size
-  totalCount.value = res.total_count
 }
 provide('getRoles', getRoles)
 getRoles()

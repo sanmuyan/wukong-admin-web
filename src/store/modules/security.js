@@ -1,22 +1,28 @@
 import { restFull } from '@/api'
 import { CLIENT_ENCRYPT_PUBLIC_KEY } from '@/constant'
-import { getCookie, setCookie } from '@/utils/cookie'
+import { getSessionItem, removeSessionItem, setSessionItem } from '@/utils/storage'
 
 export default {
   namespaced: true,
   state: () => ({
-    clientEncryptPublicKey: getCookie(CLIENT_ENCRYPT_PUBLIC_KEY) || ''
+    clientEncryptPublicKey: getSessionItem(CLIENT_ENCRYPT_PUBLIC_KEY) || ''
   }),
   mutations: {
     setClientEncryptPublicKey (state, key) {
       state.clientEncryptPublicKey = key
-      setCookie(CLIENT_ENCRYPT_PUBLIC_KEY, key, null)
+      setSessionItem(CLIENT_ENCRYPT_PUBLIC_KEY, key)
+    },
+    removeClientEncryptPublicKey (state) {
+      state.clientEncryptPublicKey = ''
+      removeSessionItem(CLIENT_ENCRYPT_PUBLIC_KEY)
     }
   },
   actions: {
     async getClientEncryptPublicKey (context) {
-      const res = await restFull('/clientEncryptPublicKey', 'GET')
-      context.commit('setClientEncryptPublicKey', res.public_key)
+      await restFull('/clientEncryptPublicKey', 'GET')
+        .then(res => {
+          context.commit('setClientEncryptPublicKey', res.data.public_key)
+        })
     }
   }
 }

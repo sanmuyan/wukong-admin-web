@@ -20,6 +20,7 @@ import { restFull } from '@/api'
 import { ElMessage } from 'element-plus'
 import { defineModel, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { encryptClientData } from '@/utils/security'
 
 const i18n = useI18n()
 const formRef = ref(null)
@@ -48,7 +49,7 @@ const formRules = ref({
     {
       required: true,
       trigger: 'blur',
-      message: i18n.t('msg.appMain.isRequired')
+      message: '请输入密码'
     }
   ],
   confirm_password: [
@@ -62,6 +63,10 @@ const formRules = ref({
 
 const handleModifyPassword = async () => {
   delete modifyPasswordRequest.value.confirm_password
+  await encryptClientData(modifyPasswordRequest.value.new_password)
+    .then(res => {
+      modifyPasswordRequest.value.new_password = res
+    })
   await restFull('/account/modifyPassword', 'POST', modifyPasswordRequest.value)
     .then(() => {
       ElMessage.success(i18n.t('msg.appMain.updateSuccess'))

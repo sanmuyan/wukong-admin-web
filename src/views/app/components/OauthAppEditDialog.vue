@@ -4,12 +4,6 @@
       <el-form-item label="应用名称" label-width="100px" prop="app_name">
         <el-input v-model="oauthApp.app_name"></el-input>
       </el-form-item>
-      <el-form-item label="应用 ID" label-width="100px" prop="client_id">
-        <el-input v-model="oauthApp.client_id" disabled></el-input>
-      </el-form-item>
-      <el-form-item label="应用秘钥" label-width="100px" prop="client_secret">
-        <el-input v-model="oauthApp.client_secret" disabled></el-input>
-      </el-form-item>
       <el-form-item label="重定向 URI" label-width="100px" prop="redirect_uri">
         <el-input
           v-model="oauthApp.redirect_uri"

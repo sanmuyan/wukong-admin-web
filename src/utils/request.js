@@ -29,20 +29,19 @@ service.interceptors.response.use(
     const {
       success,
       code,
-      message,
-      data
+      message
     } = response.data
     if (success) {
-      return data
+      return response.data
     } else {
       ElMessage.error(message)
       if (code === 1401) {
         if (!whiteList.includes(getUrlPath(window.location.href))) {
           store.dispatch('login/logout').catch()
-          store.dispatch('permission/setBackRoute', getUrlFullPath(window.location.href)).catch()
+          store.commit('permission/setBackRoute', getUrlFullPath(window.location.href))
         }
       }
-      return Promise.reject(new Error(message))
+      return Promise.reject(response.data)
     }
   },
   error => {

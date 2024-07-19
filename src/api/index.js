@@ -1,17 +1,19 @@
 import request from '@/utils/request'
 
-export const restFull = (url, method, data) => {
+export const restFull = (url, method, data, headers) => {
   if (method === 'GET') {
     return request({
       url: url,
       method: method,
-      params: data
+      params: data,
+      headers: headers
     })
   } else {
     return request({
       url: url,
       method: method,
-      data
+      data: data,
+      headers: headers
     })
   }
 }

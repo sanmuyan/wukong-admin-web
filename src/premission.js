@@ -1,9 +1,44 @@
 import router, { personalRoutes, whiteList } from '@/router'
 import store from '@/store'
 import { ElMessage } from 'element-plus'
+import { urlToParamsObj } from '@/utils/url'
+
+// 处理登录后需要跳转的情况，比如 /login?redirect_uri=https://www.baidu.com 登录后会跳转到 https://www.baidu.com
+const handleRedirect = () => {
+  let redirectUri = ''
+  if (window.location.search) {
+    const searchObj = urlToParamsObj(window.location.href)
+    if (searchObj.redirect_uri) {
+      for (const k in searchObj) {
+        if (k === 'redirect_uri') {
+          redirectUri = searchObj[k]
+        } else {
+          if (redirectUri) {
+            redirectUri += `&${k}=${searchObj[k]}`
+          }
+        }
+      }
+    }
+  }
+  if (redirectUri) {
+    if (store.getters.token) {
+      window.location.replace(redirectUri)
+      return false
+    }
+    store.commit('login/setRedirectUri', redirectUri)
+  } else {
+    store.commit('login/removeRedirectUri')
+  }
+  return true
+}
 
 // 路由前置守卫
 router.beforeEach(async (to, from, next) => {
+  if (to.path === '/login') {
+    if (!handleRedirect()) {
+      next()
+    }
+  }
   if (store.getters.token) {
     // 1. 用户登陆，则不允许进入 login
     if (to.path === '/login') {
@@ -46,7 +81,7 @@ router.beforeEach(async (to, from, next) => {
     } else {
       if (!whiteList.includes(from.path)) {
         ElMessage.error('未登录')
-        await store.dispatch('permission/setBackRoute', to.fullPath)
+        store.commit('permission/setBackRoute', to.fullPath)
       }
       next('/login')
     }
