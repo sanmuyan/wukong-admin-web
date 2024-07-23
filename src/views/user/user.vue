@@ -28,10 +28,11 @@
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="操作" fixed="right">
+        <el-table-column label="操作" fixed="right" width="300px">
           <template #default="{ row }">
             <el-button type="primary" size="small" @click="handleUserEdit(row)">编辑</el-button>
             <el-button type="primary" size="small" @click="handleRoleEdit(row)">角色</el-button>
+            <el-button type="primary" size="small" @click="handleGroupEdit(row)">用户组</el-button>
             <el-popconfirm @confirm="deleteUser(row)" title="确定删除吗？">
               <template #reference>
                 <el-button type="primary" size="small">删除</el-button>
@@ -61,10 +62,15 @@
         v-model="dialogUserCreateShow"
       ></user-create-dialog>
       <!--      角色编辑-->
-      <user-bind-edit-dialog
-        v-model="dialogRoleShow"
-        :userId="roleUserId"
-      ></user-bind-edit-dialog>
+      <user-role-bind-edit-dialog
+        v-model="showUserRoleBindDialog"
+        :userId="nowUserId"
+      ></user-role-bind-edit-dialog>
+      <!--      组编辑-->
+      <user-bind-group-edit-dialog
+        v-model="showUserBindGroupDialog"
+        :userId="nowUserId"
+      ></user-bind-group-edit-dialog>
     </el-card>
   </div>
 </template>
@@ -74,8 +80,9 @@ import { restFull } from '@/api'
 import { provide, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import UserEditDialog from './components/UserEditDialog'
-import UserBindEditDialog from './components/UserBindEditDialog'
+import UserRoleBindEditDialog from '../rbac/components/UserRoleBindEditDialog.vue'
 import UserCreateDialog from './components/UserCreateDialog'
+import UserBindGroupEditDialog from '@/views/user/components/UserBindGroupEditDialog.vue'
 
 // 获取列表
 const userList = ref([])
@@ -84,6 +91,7 @@ const pageSize = ref(10)
 const totalCount = ref(0)
 const userQueryData = ref('')
 const loading = ref(false)
+const nowUserId = ref(0)
 const getUsers = async () => {
   loading.value = true
   await restFull('/user', 'GET', {
@@ -141,11 +149,17 @@ const deleteUser = async (user) => {
 }
 
 // 编辑角色
-const roleUserId = ref(0)
-const dialogRoleShow = ref(false)
+const showUserRoleBindDialog = ref(false)
 const handleRoleEdit = (user) => {
-  roleUserId.value = user.id
-  dialogRoleShow.value = true
+  nowUserId.value = user.id
+  showUserRoleBindDialog.value = true
+}
+
+// 编辑用户组
+const showUserBindGroupDialog = ref(false)
+const handleGroupEdit = (user) => {
+  nowUserId.value = user.id
+  showUserBindGroupDialog.value = true
 }
 
 </script>

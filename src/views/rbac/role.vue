@@ -50,10 +50,10 @@
         v-model="dialogRoleCreateShow"
       ></role-create-dialog>
       <!--      权限编辑-->
-      <role-bind-edit-dialog
-        v-model="dialogRoleShow"
-        :roleId="roleResourceId"
-      ></role-bind-edit-dialog>
+      <role-resource-bind-edit-dialog
+        v-model="showRoleResourceBindDialog"
+        :roleId="roleId"
+      ></role-resource-bind-edit-dialog>
     </el-card>
   </div>
 </template>
@@ -64,7 +64,7 @@ import { provide, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import RoleEditDialog from './components/RoleEditDialog'
 import RoleCreateDialog from './components/RoleCreateDialog'
-import RoleBindEditDialog from './components/RoleBindEditDialog'
+import RoleResourceBindEditDialog from './components/RoleResourceBindEditDialog.vue'
 
 // 获取列表
 const roleList = ref([])
@@ -130,11 +130,11 @@ const deleteRole = async (role) => {
 }
 
 // 编辑权限
-const dialogRoleShow = ref(false)
-const roleResourceId = ref(0)
+const showRoleResourceBindDialog = ref(false)
+const roleId = ref(0)
 const handleResourceEdit = (role) => {
-  dialogRoleShow.value = true
-  roleResourceId.value = role.id
+  showRoleResourceBindDialog.value = true
+  roleId.value = role.id
 }
 
 </script>

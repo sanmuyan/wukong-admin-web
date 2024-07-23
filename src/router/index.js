@@ -4,9 +4,10 @@ import app from './modules/app'
 import { publicRoutes } from '@/router/modules/public'
 import home from './modules/home'
 import settings from '@/router/modules/settings'
+import rbac from '@/router/modules/rbac'
 
 export const privateRoutes = [
-  user, app, settings
+  user, rbac, app, settings
 ]
 
 export const personalRoutes = [

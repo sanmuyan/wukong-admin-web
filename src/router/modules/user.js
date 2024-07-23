@@ -19,20 +19,11 @@ export default {
       }
     },
     {
-      path: '/role',
-      component: () => import('@/views/user/role'),
-      name: 'roleManage',
+      path: '/group',
+      component: () => import('@/views/user/group'),
+      name: 'groupManage',
       meta: {
-        title: 'roleManage',
-        icon: menuSubIcon
-      }
-    },
-    {
-      path: '/resource',
-      component: () => import('@/views/user/resource'),
-      name: 'resourceManage',
-      meta: {
-        title: 'resourceManage',
+        title: 'groupManage',
         icon: menuSubIcon
       }
     }

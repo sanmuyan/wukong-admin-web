@@ -32,6 +32,12 @@ const handleRedirect = () => {
   return true
 }
 
+const removeRoutes = () => {
+  router.getRoutes().forEach(item => {
+    router.removeRoute(item.name)
+  })
+}
+
 // 路由前置守卫
 router.beforeEach(async (to, from, next) => {
   if (to.path === '/login') {
@@ -47,6 +53,8 @@ router.beforeEach(async (to, from, next) => {
       // 判断用户信息是否存在，不存在则获取用户信息
       if (!store.getters.hasAccountProfile) {
         await store.dispatch('login/accountProfile')
+        // 先移除原先的路由
+        removeRoutes()
         // 添加用户个人路由
         personalRoutes.forEach(item => {
           router.addRoute(item)

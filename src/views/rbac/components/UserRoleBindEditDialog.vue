@@ -2,6 +2,7 @@
   <!--      编辑-->
   <el-dialog @close="closed" v-model="modelValue" width="800px" draggable title="角色编辑">
     <el-transfer
+      filterable
       v-model="userRoleIdList"
       :titles="['角色列表', '已授权']"
       :button-texts="['移除', '添加']"
@@ -33,20 +34,12 @@ const userId = defineModel('userId', { required: true })
 const roleList = ref([])
 const userRoleOptionList = ref([])
 const userRoleIdList = ref([])
-const userBindList = ref([])
+const userRoleBindList = ref([])
 
 const getRoles = async (parameter) => {
-  if (!parameter) {
-    parameter = {
-      page_number: 1,
-      page_size: 10
-    }
-  }
-  await restFull('/role', 'GET', parameter)
+  await restFull('/role', 'GET', { page_size: 100 })
     .then(async res => {
-      res.data.roles.forEach(item => {
-        roleList.value.push(item)
-      })
+      roleList.value = res.data.roles
       if (res.data.total_count > (res.data.page_number * res.data.page_size)) {
         await getRoles({
           page_number: res.data.page_number + 1,
@@ -56,22 +49,23 @@ const getRoles = async (parameter) => {
     })
 }
 
-const getUserBinds = async () => {
+const getUserRoleBinds = async () => {
   await getRoles()
-  await restFull('/userBind', 'GET', {
-    user_id: userId.value
+  await restFull('/userRoleBind', 'GET', {
+    user_id: userId.value,
+    page_size: 100
   }).then(res => {
-    userBindList.value = res.data.user_binds
+    userRoleBindList.value = res.data.user_role_binds
     // 生成默认数据
     roleList.value.forEach(role => {
       userRoleOptionList.value.push({
         value: role.id,
-        label: role.role_name
+        label: role.comment ? role.role_name + '(' + role.comment + ')' : role.role_name
       })
-      const userBind = userBindList.value.find(userBind => {
-        return userBind.role_id === role.id
+      const userRoleBind = userRoleBindList.value.find(userRoleBind => {
+        return userRoleBind.role_id === role.id
       })
-      if (userBind) {
+      if (userRoleBind) {
         userRoleIdList.value.push(role.id)
       }
     })
@@ -81,41 +75,41 @@ const getUserBinds = async () => {
 watch(
   () => modelValue.value,
   val => {
-    if (val) getUserBinds()
+    if (val) getUserRoleBinds()
   }
 )
 
-const updateUserBind = () => {
+const updateUserRoleBind = () => {
   // 删除
-  const deleteUserBindList = []
-  userBindList.value.forEach(userBind => {
-    const x = userRoleIdList.value.indexOf(userBind.role_id)
+  const deleteUserRoleBindList = []
+  userRoleBindList.value.forEach(userRoleBind => {
+    const x = userRoleIdList.value.indexOf(userRoleBind.role_id)
     if (x === -1) {
-      deleteUserBindList.push({ id: userBind.id })
+      deleteUserRoleBindList.push({ id: userRoleBind.id })
     }
   })
-  if (deleteUserBindList.length > 0) {
-    restFull('/userBind', 'DELETE', deleteUserBindList)
+  if (deleteUserRoleBindList.length > 0) {
+    restFull('/userRoleBind', 'DELETE', deleteUserRoleBindList)
       .then(() => {
         ElMessage.success(i18n.t('msg.appMain.updateSuccess'))
       })
   }
   // 创建
-  const createUserBindList = []
+  const createUserRoleBindList = []
   userRoleIdList.value.forEach(roleId => {
-    const userBind = userBindList.value.find(userBind => {
-      return userBind.role_id === roleId
+    const userRoleBind = userRoleBindList.value.find(userRoleBind => {
+      return userRoleBind.role_id === roleId
     })
-    if (userBind) {
+    if (userRoleBind) {
       return
     }
-    createUserBindList.push({
+    createUserRoleBindList.push({
       user_id: userId.value,
       role_id: roleId
     })
   })
-  if (createUserBindList.length > 0) {
-    restFull('/userBind', 'POST', createUserBindList)
+  if (createUserRoleBindList.length > 0) {
+    restFull('/userRoleBind', 'POST', createUserRoleBindList)
       .then(() => {
         ElMessage.success('更新成功')
       })
@@ -124,7 +118,7 @@ const updateUserBind = () => {
 }
 
 const handleButtonSubmit = () => {
-  updateUserBind()
+  updateUserRoleBind()
 }
 
 const handleButtonCancel = () => {
