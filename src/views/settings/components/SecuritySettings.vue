@@ -20,8 +20,8 @@
       <el-form-item label="登录锁定时间" prop="login_lock_time">
         <el-input v-model="config.login_lock_time"></el-input>
       </el-form-item>
-      <el-form-item label="禁用服务器登录验证" prop="disable_verify_server_token">
-        <el-checkbox v-model="config.disable_verify_server_token"></el-checkbox>
+      <el-form-item label="验证令牌会话" prop="disable_verify_token_session">
+        <el-checkbox v-model="config.verify_token_session"></el-checkbox>
       </el-form-item>
       <span>安全设备</span>
       <el-divider />
@@ -54,7 +54,7 @@ const modelValue = defineModel({ required: true })
 
 const configTemplate = ref({
   token_ttl: 86400,
-  disable_verify_server_token: false,
+  verify_token_session: true,
   login_max_fails: 10,
   login_lock_time: 60,
   password_min_length: 8,
